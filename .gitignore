@@ -22,3 +22,10 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.amazonq/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+AGENT.md

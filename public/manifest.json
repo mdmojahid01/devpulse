@@ -3,6 +3,7 @@
   "name": "DevPulse",
   "version": "1.0",
   "description": "Developer progress dashboard",
+  "permissions": ["storage"],
   "chrome_url_overrides": {
     "newtab": "index.html"
   }
