@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   scrapeContributions,
   fetchRecentRepos,
@@ -85,7 +85,7 @@ export const useGithubData = (username: string): UseGithubDataReturn => {
     await fetchData(true);
   }, [fetchData]);
 
-  const todayCommits = getTodayCommitCount(events);
+  const todayCommits = useMemo(() => getTodayCommitCount(events), [events]);
   const totalContributions = contributions?.total?.lastYear ?? 0;
 
   return {

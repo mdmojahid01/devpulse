@@ -58,8 +58,8 @@ function GithubActivity() {
           <AppCard.Content className="flex items-center gap-3">
             <FiGitCommit className="text-accent text-2xl" />
             <div>
-              <p className="text-muted text-sm">Today's Commits</p>
-              <p className="text-2xl font-bold">{todayCommits}</p>
+              <p className="text-muted text-sm">Today's Pushes</p>
+              <p className="text-center text-2xl font-bold">{todayCommits}</p>
             </div>
           </AppCard.Content>
         </AppCard>
@@ -69,7 +69,9 @@ function GithubActivity() {
             <FiActivity className="text-success text-2xl" />
             <div>
               <p className="text-muted text-sm">Total Contributions</p>
-              <p className="text-2xl font-bold">{totalContributions}</p>
+              <p className="text-center text-2xl font-bold">
+                {totalContributions}
+              </p>
             </div>
           </AppCard.Content>
         </AppCard>
@@ -79,7 +81,7 @@ function GithubActivity() {
             <FiGithub className="text-2xl" />
             <div>
               <p className="text-muted text-sm">Active Repos</p>
-              <p className="text-2xl font-bold">{repos.length}</p>
+              <p className="text-center text-2xl font-bold">{repos.length}</p>
             </div>
           </AppCard.Content>
         </AppCard>

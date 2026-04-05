@@ -242,8 +242,11 @@ export type GithubEvent = {
     url: string;
   };
   payload: {
-    commits?: Array<{ message: string }>;
-    size?: number;
+    repository_id?: number;
+    push_id?: number;
+    ref?: string;
+    head?: string;
+    before?: string;
   };
 };
 
@@ -303,11 +306,19 @@ export const fetchRecentEvents = async (
 
 // Calculate today's commit count from events
 export const getTodayCommitCount = (events: GithubEvent[]): number => {
-  const today = new Date().toISOString().split("T")[0];
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+  );
 
-  return events
-    .filter(
-      event => event.type === "PushEvent" && event.created_at.startsWith(today),
-    )
-    .reduce((total, event) => total + (event.payload.size || 0), 0);
+  const todayPushEvents = events.filter(event => {
+    if (event.type !== "PushEvent") return false;
+    const eventTime = new Date(event.created_at);
+    return eventTime >= todayStart && eventTime < todayEnd;
+  });
+
+  return todayPushEvents.length;
 };
