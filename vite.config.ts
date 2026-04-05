@@ -12,4 +12,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/github": {
+        target: "https://github.com",
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/github/, ""),
+      },
+    },
+  },
 });

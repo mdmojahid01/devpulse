@@ -1,14 +1,15 @@
 {
   "version": "0.2",
   "words": [
-    "heroui",
+    "domhandler",
     "gitbook",
+    "heroui",
+    "LEETCODE",
     "orcid",
     "organisation",
     "Organisations",
-    "uuidv4",
     "uuidv",
-    "LEETCODE",
+    "uuidv4",
     "VITE"
   ]
 }
