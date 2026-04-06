@@ -1,3 +1,5 @@
+import { parseDateString } from "@/lib/dateFormat";
+
 export function getMonthLabelsWithPositions(
   weeks: Array<Array<{ date: string; count: number; level: number }>>,
 ) {
@@ -11,7 +13,7 @@ export function getMonthLabelsWithPositions(
     const sortedWeek = [...week].sort((a, b) => a.date.localeCompare(b.date));
 
     for (const day of sortedWeek) {
-      const date = new Date(day.date);
+      const date = parseDateString(day.date);
       const monthName = date.toLocaleDateString("en-US", { month: "short" });
 
       // If this is a new month, mark this column
@@ -42,7 +44,7 @@ export function groupByMonth(
   >();
 
   contributions.forEach(day => {
-    const date = new Date(day.date);
+    const date = parseDateString(day.date);
     const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
     const monthLabel = date.toLocaleDateString("en-US", {
       month: "long",

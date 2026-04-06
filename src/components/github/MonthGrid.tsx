@@ -1,5 +1,5 @@
 import AppTooltip from "@/components/ui/AppTooltip";
-import { formatDate } from "@/lib/dateFormat";
+import { formatDate, parseDateString } from "@/lib/dateFormat";
 
 function MonthGrid({
   days,
@@ -19,7 +19,7 @@ function MonthGrid({
   } | null> = [];
 
   // Get the first day of the month to determine starting day of week
-  const firstDate = new Date(days[0].date);
+  const firstDate = parseDateString(days[0].date);
   const startDayOfWeek = firstDate.getDay(); // 0 = Sunday
 
   // Fill empty days at the start of the first week

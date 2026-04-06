@@ -1,5 +1,5 @@
 import AppTooltip from "@/components/ui/AppTooltip";
-import { formatDate } from "@/lib/dateFormat";
+import { formatDate, parseDateString } from "@/lib/dateFormat";
 import { getMonthLabelsWithPositions, LEVEL_COLORS } from "@/lib/githubUtils";
 
 function GithubStyleGraph({
@@ -13,7 +13,7 @@ function GithubStyleGraph({
   let currentWeek: Array<{ date: string; count: number; level: number }> = [];
 
   contributions.forEach((day, index) => {
-    const dayOfWeek = new Date(day.date).getDay(); // 0 = Sunday, 6 = Saturday
+    const dayOfWeek = parseDateString(day.date).getDay(); // 0 = Sunday, 6 = Saturday
 
     // Start a new week on Sunday (except for the first day)
     if (dayOfWeek === 0 && currentWeek.length > 0) {
@@ -84,7 +84,7 @@ function GithubStyleGraph({
                 {Array.from({ length: 7 }).map((_, dayIndex) => {
                   // dayIndex: 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
                   const day = week.find(
-                    d => new Date(d.date).getDay() === dayIndex,
+                    d => parseDateString(d.date).getDay() === dayIndex,
                   );
 
                   if (!day) {
