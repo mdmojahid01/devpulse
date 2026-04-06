@@ -105,6 +105,7 @@ const AppInput = React.forwardRef<HTMLInputElement, AppInputProps>(
         className={className}
         name={name}
         id={id}
+        aria-label={!label ? ariaLabel : undefined}
       >
         {label && <Label>{label}</Label>}
 

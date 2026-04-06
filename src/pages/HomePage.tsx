@@ -79,6 +79,7 @@ export default function HomePage() {
           <div className="w-full max-w-2xl">
             <AppInput
               placeholder="Search Google..."
+              ariaLabel="Search Google"
               value={searchQuery}
               onChange={setSearchQuery}
               onKeyDown={handleKeyPress}
