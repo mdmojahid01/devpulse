@@ -2,11 +2,31 @@ import GithubActivity from "@/components/github/GithubActivity";
 import ThemeToggle from "@/components/ThemeToggle";
 import { Button, Tooltip } from "@heroui/react";
 import { FiRefreshCw } from "react-icons/fi";
+import { FaGoogle } from "react-icons/fa";
 import { useGithubData } from "@/hooks/useGithubData";
 import envConfig from "@/config/envConfig";
+import AppButton from "@/components/ui/AppButton";
+import AppInput from "@/components/ui/AppInput";
+import { useState } from "react";
 
 export default function HomePage() {
   const { refreshData, loading } = useGithubData(envConfig.GITHUB_USERNAME);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleGoogleSearch = () => {
+    const query = searchQuery.trim();
+    if (query) {
+      globalThis.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    } else {
+      globalThis.location.href = "https://www.google.com";
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleGoogleSearch();
+    }
+  };
 
   return (
     <main className="bg-background min-h-screen px-4 py-6">
@@ -37,7 +57,35 @@ export default function HomePage() {
                 <p className="text-xs">Refresh data</p>
               </Tooltip.Content>
             </Tooltip>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={handleGoogleSearch}
+                  suffix={<FaGoogle className="size-4" />}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">Open Google</p>
+              </Tooltip.Content>
+            </Tooltip>
             <ThemeToggle />
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <div className="w-full max-w-2xl">
+            <AppInput
+              placeholder="Search Google..."
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onKeyDown={handleKeyPress}
+              autoFocus
+              fullWidth
+              inputGroupClassName="h-14 rounded-full"
+              prefix={<FaGoogle className="text-muted size-5" />}
+            />
           </div>
         </div>
         <div className="">
