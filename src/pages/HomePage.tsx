@@ -10,7 +10,8 @@ import AppInput from "@/components/ui/AppInput";
 import { useState } from "react";
 
 export default function HomePage() {
-  const { refreshData, loading } = useGithubData(envConfig.GITHUB_USERNAME);
+  const githubData = useGithubData(envConfig.GITHUB_USERNAME);
+  const { refreshData, loading } = githubData;
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleGoogleSearch = () => {
@@ -89,7 +90,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="">
-          <GithubActivity />
+          <GithubActivity githubData={githubData} />
         </div>
       </div>
     </main>

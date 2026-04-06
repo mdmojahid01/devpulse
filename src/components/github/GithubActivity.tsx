@@ -6,7 +6,6 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { useGithubData } from "@/hooks/useGithubData";
-import envConfig from "@/config/envConfig";
 import AppSpinner from "@/components/ui/AppSpinner";
 import AppChip from "@/components/ui/AppChip";
 import AppCard from "@/components/ui/AppCard";
@@ -17,7 +16,11 @@ import { useState } from "react";
 import GithubStyleGraph from "./GithubStyleGraph";
 import MonthlyStyleGraph from "./MonthlyStyleGraph";
 
-function GithubActivity() {
+type GithubActivityProps = {
+  githubData: ReturnType<typeof useGithubData>;
+};
+
+function GithubActivity({ githubData }: Readonly<GithubActivityProps>) {
   const {
     contributions,
     repos,
@@ -28,7 +31,7 @@ function GithubActivity() {
     selectedYear,
     setSelectedYear,
     availableYears,
-  } = useGithubData(envConfig.GITHUB_USERNAME);
+  } = githubData;
 
   const [viewMode, setViewMode] = useState<"github" | "monthly">("github");
 
