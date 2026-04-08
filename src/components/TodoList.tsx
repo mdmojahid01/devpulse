@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useTodos } from "@/hooks/useTodos";
-import { Checkbox, Kbd } from "@heroui/react";
+import { Checkbox, Kbd, Tooltip } from "@heroui/react";
 import {
   FiPlus,
   FiTrash2,
@@ -9,6 +9,7 @@ import {
   FiCheckCircle,
   FiCircle,
   FiClock,
+  FiCornerDownRight,
 } from "react-icons/fi";
 import AppCard from "@/components/ui/AppCard";
 import AppButton from "@/components/ui/AppButton";
@@ -22,8 +23,12 @@ export default function TodoList() {
   const [newDescription, setNewDescription] = useState("");
   const [showInput, setShowInput] = useState(false);
   const [expandedPrevious, setExpandedPrevious] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
 
-  const isMac = globalThis?.navigator?.userAgent.includes("Mac") ?? false;
+  const isMac = useMemo(
+    () => globalThis?.navigator?.userAgent.includes("Mac") ?? false,
+    [],
+  );
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
   const yesterday = useMemo(() => {
@@ -33,21 +38,34 @@ export default function TodoList() {
   }, []);
 
   // Keyboard shortcut: Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        setShowInput(prev => !prev);
-      }
-    };
-
-    globalThis.addEventListener("keydown", handleKeyDown);
-    return () => globalThis.removeEventListener("keydown", handleKeyDown);
+  const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      e.preventDefault();
+      setShowInput(prev => !prev);
+    }
   }, []);
 
-  const todayTodos = todos.filter(t => t.date === today && !t.completed);
-  const todayCompleted = todos.filter(t => t.date === today && t.completed);
-  const previousTodos = todos.filter(t => t.date < today && !t.completed);
+  useEffect(() => {
+    globalThis.addEventListener("keydown", handleGlobalKeyDown);
+    return () => globalThis.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [handleGlobalKeyDown]);
+
+  // Scroll form into view when it appears
+  useEffect(() => {
+    if (showInput && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [showInput]);
+
+  const todayTodos = todos.filter(
+    t => t.date === today && !t.completed && !t.parentId,
+  );
+  const todayCompleted = todos.filter(
+    t => t.date === today && t.completed && !t.parentId,
+  );
+  const previousTodos = todos.filter(
+    t => t.date < today && !t.completed && !t.parentId,
+  );
 
   // Group previous todos by date
   const groupedPreviousTodos = useMemo(() => {
@@ -71,31 +89,43 @@ export default function TodoList() {
     return { totalPending, todayPending, totalCompleted };
   }, [todos, todayTodos]);
 
-  const handleAdd = async () => {
+  const handleAdd = useCallback(async () => {
     if (newTitle.trim()) {
       await addTodo(newTitle.trim(), newDescription.trim() || undefined);
       setNewTitle("");
       setNewDescription("");
-      // Keep the form open for adding another task
-      // User can press Esc to close
     }
-  };
+  }, [newTitle, newDescription, addTodo]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setShowInput(false);
     setNewTitle("");
     setNewDescription("");
-  };
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      handleCancel();
-    } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleAdd();
+  const handleClearAll = useCallback(async () => {
+    if (
+      confirm(
+        "Are you sure you want to delete all tasks? This action cannot be undone.",
+      )
+    ) {
+      const allTodoIds = todos.map(t => t.id);
+      await Promise.all(allTodoIds.map(id => deleteTodo(id)));
     }
-  };
+  }, [todos, deleteTodo]);
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancel();
+      } else if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleAdd();
+      }
+    },
+    [handleCancel, handleAdd],
+  );
 
   return (
     <div className="space-y-6">
@@ -139,16 +169,45 @@ export default function TodoList() {
       </div>
 
       {/* Tasks List */}
-      <AppCard className="h-full p-6">
+      <AppCard className="p-6">
         <AppCard.Header className="flex flex-row items-center justify-between">
           <h2 className="text-lg font-semibold">Manage Your Daily Tasks</h2>
-          <div className="flex items-center gap-1">
-            <Kbd>
-              <Kbd.Abbr keyValue={isMac ? "command" : "ctrl"} />
-            </Kbd>
-            <Kbd>
-              <Kbd.Content>K</Kbd.Content>
-            </Kbd>
+          <div className="flex items-center gap-2">
+            {todos.length > 0 && (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <AppButton
+                    size="sm"
+                    variant="danger"
+                    onPress={handleClearAll}
+                    prefix={<FiTrash2 className="size-4" />}
+                  >
+                    Clear All
+                  </AppButton>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p className="text-xs">Delete all tasks</p>
+                </Tooltip.Content>
+              </Tooltip>
+            )}
+            <AppButton
+              size="sm"
+              variant="primary"
+              onPress={() => setShowInput(true)}
+              prefix={<FiPlus className="size-4" />}
+              suffix={
+                <div className="flex items-center gap-1">
+                  <Kbd>
+                    <Kbd.Abbr keyValue={isMac ? "command" : "ctrl"} />
+                  </Kbd>
+                  <Kbd>
+                    <Kbd.Content>K</Kbd.Content>
+                  </Kbd>
+                </div>
+              }
+            >
+              Add Task
+            </AppButton>
           </div>
         </AppCard.Header>
 
@@ -173,14 +232,19 @@ export default function TodoList() {
                   <TodoItem
                     key={todo.id}
                     todo={todo}
+                    todos={todos}
                     onToggle={toggleTodo}
                     onDelete={deleteTodo}
+                    onAddSubtask={addTodo}
                   />
                 ))}
 
                 {/* Add New Task */}
-                {showInput ? (
-                  <div className="border-divider space-y-2 rounded-lg border p-3">
+                {showInput && (
+                  <div
+                    ref={formRef}
+                    className="border-divider space-y-2 rounded-lg border p-3"
+                  >
                     <AppInput
                       placeholder="Task title"
                       ariaLabel="Task title"
@@ -204,6 +268,18 @@ export default function TodoList() {
                           size="sm"
                           variant="primary"
                           onPress={handleAdd}
+                          prefix={
+                            <div className="flex items-center gap-0.5">
+                              <Kbd>
+                                <Kbd.Abbr
+                                  keyValue={isMac ? "command" : "ctrl"}
+                                />
+                              </Kbd>
+                              <Kbd>
+                                <Kbd.Abbr keyValue="enter" />
+                              </Kbd>
+                            </div>
+                          }
                         >
                           Add
                         </AppButton>
@@ -211,35 +287,23 @@ export default function TodoList() {
                           size="sm"
                           variant="ghost"
                           onPress={handleCancel}
+                          prefix={
+                            <Kbd>
+                              <Kbd.Abbr keyValue="escape" />
+                            </Kbd>
+                          }
                         >
                           Cancel
                         </AppButton>
                       </div>
-                      <div className="text-muted flex items-center gap-2 text-xs">
-                        <span className="flex items-center gap-1">
-                          <Kbd variant="light">
-                            <Kbd.Abbr keyValue="escape" />
-                          </Kbd>
-                          <span>Cancel</span>
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Kbd variant="light">
-                            <Kbd.Abbr keyValue={isMac ? "command" : "ctrl"} />
-                            <Kbd.Abbr keyValue="enter" />
-                          </Kbd>
-                          <span>Add</span>
-                        </span>
-                      </div>
                     </div>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => setShowInput(true)}
-                    className="text-accent hover:text-accent/80 flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm transition-colors"
-                  >
-                    <FiPlus className="size-4" />
-                    <span>Add task</span>
-                  </button>
+                )}
+
+                {!showInput && todayTodos.length === 0 && (
+                  <div className="text-muted flex items-center justify-center py-4 text-sm">
+                    No tasks for today. Click "Add Task" to get started!
+                  </div>
                 )}
 
                 {/* Completed Today */}
@@ -252,8 +316,10 @@ export default function TodoList() {
                       <TodoItem
                         key={todo.id}
                         todo={todo}
+                        todos={todos}
                         onToggle={toggleTodo}
                         onDelete={deleteTodo}
+                        onAddSubtask={addTodo}
                       />
                     ))}
                   </div>
@@ -263,17 +329,20 @@ export default function TodoList() {
               {/* Previous Pending Tasks */}
               {previousTodos.length > 0 && (
                 <div className="border-divider border-t pt-4">
-                  <button
-                    onClick={() => setExpandedPrevious(!expandedPrevious)}
-                    className="text-muted hover:text-foreground flex w-full items-center justify-between text-xs font-medium uppercase transition-colors"
+                  <AppButton
+                    variant="ghost"
+                    onPress={() => setExpandedPrevious(!expandedPrevious)}
+                    suffix={
+                      expandedPrevious ? (
+                        <FiChevronUp className="size-4" />
+                      ) : (
+                        <FiChevronDown className="size-4" />
+                      )
+                    }
+                    className="text-muted hover:text-foreground w-full justify-between text-xs font-medium uppercase"
                   >
-                    <span>Previous ({previousTodos.length})</span>
-                    {expandedPrevious ? (
-                      <FiChevronUp className="size-4" />
-                    ) : (
-                      <FiChevronDown className="size-4" />
-                    )}
-                  </button>
+                    Previous ({previousTodos.length})
+                  </AppButton>
 
                   {expandedPrevious && (
                     <div className="mt-2 max-h-64 space-y-4 overflow-y-auto">
@@ -289,8 +358,10 @@ export default function TodoList() {
                               <TodoItem
                                 key={todo.id}
                                 todo={todo}
+                                todos={todos}
                                 onToggle={toggleTodo}
                                 onDelete={deleteTodo}
+                                onAddSubtask={addTodo}
                               />
                             ))}
                           </div>
@@ -310,50 +381,244 @@ export default function TodoList() {
 
 interface TodoItemProps {
   todo: Todo;
+  todos: Todo[];
   onToggle: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onAddSubtask: (
+    title: string,
+    description?: string,
+    date?: string,
+    parentId?: string,
+  ) => Promise<void>;
   showDate?: boolean;
 }
 
 function TodoItem({
   todo,
+  todos,
   onToggle,
   onDelete,
+  onAddSubtask,
   showDate,
 }: Readonly<TodoItemProps>) {
+  const [showSubtaskInput, setShowSubtaskInput] = useState(false);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
+  const [expandedSubtasks, setExpandedSubtasks] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const subtasks = useMemo(
+    () => todos.filter(t => t.parentId === todo.id),
+    [todos, todo.id],
+  );
+  const hasSubtasks = subtasks.length > 0;
+
+  const handleAddSubtask = useCallback(async () => {
+    if (subtaskTitle.trim()) {
+      await onAddSubtask(subtaskTitle.trim(), undefined, todo.date, todo.id);
+      setSubtaskTitle("");
+    }
+  }, [subtaskTitle, onAddSubtask, todo.date, todo.id]);
+
+  const handleCancelSubtask = useCallback(() => {
+    setShowSubtaskInput(false);
+    setSubtaskTitle("");
+  }, []);
+
+  const handleSubtaskKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleAddSubtask();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        e.stopPropagation();
+        handleCancelSubtask();
+      }
+    },
+    [handleAddSubtask, handleCancelSubtask],
+  );
+
   return (
-    <div className="group hover:bg-surface flex items-start gap-3 rounded-lg px-2 py-2 transition-colors">
+    <div className="space-y-1">
+      <div
+        className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="flex items-center">
+          <Checkbox
+            isSelected={todo.completed}
+            onChange={() => onToggle(todo.id)}
+            variant={isHovered ? "primary" : "secondary"}
+          >
+            <Checkbox.Control className="size-4">
+              <Checkbox.Indicator />
+            </Checkbox.Control>
+          </Checkbox>
+        </div>
+        <div className="min-w-0 flex-1">
+          <p
+            className={`text-sm ${todo.completed ? "text-muted line-through" : "text-foreground"}`}
+          >
+            {todo.title}
+          </p>
+          {todo.description && (
+            <p className="text-muted text-xs">{todo.description}</p>
+          )}
+          {showDate && (
+            <p className="text-muted text-xs">{formatDate(todo.date)}</p>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {hasSubtasks && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={() => setExpandedSubtasks(!expandedSubtasks)}
+                  className="text-muted hover:text-foreground shrink-0"
+                  prefix={
+                    expandedSubtasks ? (
+                      <FiChevronUp className="size-4" />
+                    ) : (
+                      <FiChevronDown className="size-4" />
+                    )
+                  }
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">
+                  {expandedSubtasks ? "Collapse subtasks" : "Expand subtasks"}
+                </p>
+              </Tooltip.Content>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <Tooltip.Trigger>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                onPress={() => setShowSubtaskInput(!showSubtaskInput)}
+                className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                prefix={<FiCornerDownRight className="size-4" />}
+              />
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p className="text-xs">Add subtask</p>
+            </Tooltip.Content>
+          </Tooltip>
+          <Tooltip>
+            <Tooltip.Trigger>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                onPress={() => onDelete(todo.id)}
+                className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                prefix={<FiTrash2 className="size-4" />}
+              />
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p className="text-xs">Delete task</p>
+            </Tooltip.Content>
+          </Tooltip>
+        </div>
+      </div>
+
+      {/* Subtask Input */}
+      {showSubtaskInput && (
+        <div className="ml-6 flex items-center gap-2 py-1">
+          <AppInput
+            placeholder="Subtask title"
+            ariaLabel="Subtask title"
+            value={subtaskTitle}
+            onChange={setSubtaskTitle}
+            autoFocus
+            fullWidth
+            onKeyDown={handleSubtaskKeyDown}
+          />
+          <AppButton size="sm" variant="primary" onPress={handleAddSubtask}>
+            Add
+          </AppButton>
+          <AppButton size="sm" variant="ghost" onPress={handleCancelSubtask}>
+            Cancel
+          </AppButton>
+        </div>
+      )}
+
+      {/* Subtasks */}
+      {hasSubtasks && expandedSubtasks && (
+        <div className="ml-6 space-y-0.5">
+          {subtasks.map(subtask => (
+            <SubtaskItem
+              key={subtask.id}
+              subtask={subtask}
+              onToggle={onToggle}
+              onDelete={onDelete}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface SubtaskItemProps {
+  subtask: Todo;
+  onToggle: (id: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}
+
+function SubtaskItem({
+  subtask,
+  onToggle,
+  onDelete,
+}: Readonly<SubtaskItemProps>) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <div
+      className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <div className="flex items-center">
         <Checkbox
-          isSelected={todo.completed}
-          onChange={() => onToggle(todo.id)}
-          variant="secondary"
+          isSelected={subtask.completed}
+          onChange={() => onToggle(subtask.id)}
+          variant={isHovered ? "primary" : "secondary"}
         >
-          <Checkbox.Control className="size-5">
+          <Checkbox.Control className="size-3.5">
             <Checkbox.Indicator />
           </Checkbox.Control>
         </Checkbox>
       </div>
       <div className="min-w-0 flex-1">
         <p
-          className={`text-sm ${todo.completed ? "text-muted line-through" : "text-foreground"}`}
+          className={`text-xs ${subtask.completed ? "text-muted line-through" : "text-foreground"}`}
         >
-          {todo.title}
+          {subtask.title}
         </p>
-        {todo.description && (
-          <p className="text-muted mt-0.5 text-xs">{todo.description}</p>
-        )}
-        {showDate && (
-          <p className="text-muted mt-0.5 text-xs">{formatDate(todo.date)}</p>
-        )}
       </div>
-      <button
-        onClick={() => onDelete(todo.id)}
-        className="text-muted hover:text-danger flex-shrink-0 opacity-0 transition-all group-hover:opacity-100"
-        title="Delete task"
-      >
-        <FiTrash2 className="size-4" />
-      </button>
+      <Tooltip>
+        <Tooltip.Trigger>
+          <AppButton
+            variant="ghost"
+            size="sm"
+            isIconOnly
+            onPress={() => onDelete(subtask.id)}
+            className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
+            prefix={<FiTrash2 className="size-3" />}
+          />
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p className="text-xs">Delete subtask</p>
+        </Tooltip.Content>
+      </Tooltip>
     </div>
   );
 }

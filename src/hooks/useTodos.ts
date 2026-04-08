@@ -10,6 +10,7 @@ type UseTodosReturn = {
     title: string,
     description?: string,
     date?: string,
+    parentId?: string,
   ) => Promise<void>;
   updateTodo: (id: string, updates: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
@@ -40,9 +41,14 @@ export function useTodos(): UseTodosReturn {
   }, [loadTodos]);
 
   const addTodo = useCallback(
-    async (title: string, description?: string, date?: string) => {
+    async (
+      title: string,
+      description?: string,
+      date?: string,
+      parentId?: string,
+    ) => {
       try {
-        await todoStorage.addTodo(title, description, date);
+        await todoStorage.addTodo(title, description, date, parentId);
         await loadTodos();
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to add todo");

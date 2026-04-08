@@ -5,6 +5,7 @@ export type Todo = {
   completed: boolean;
   createdAt: string;
   date: string; // YYYY-MM-DD format
+  parentId?: string; // For subtasks
 };
 
 const STORAGE_KEY = "devpulse_todos";
@@ -71,6 +72,7 @@ export const todoStorage = {
     title: string,
     description?: string,
     date?: string,
+    parentId?: string,
   ): Promise<Todo> {
     const todos = await todoStorage.getTodos();
     const newTodo: Todo = {
@@ -80,6 +82,7 @@ export const todoStorage = {
       completed: false,
       createdAt: new Date().toISOString(),
       date: date || new Date().toISOString().split("T")[0],
+      parentId,
     };
     todos.push(newTodo);
     await todoStorage.saveTodos(todos);
@@ -97,7 +100,8 @@ export const todoStorage = {
 
   async deleteTodo(id: string): Promise<void> {
     const todos = await todoStorage.getTodos();
-    const filtered = todos.filter(t => t.id !== id);
+    // Delete the todo and all its subtasks
+    const filtered = todos.filter(t => t.id !== id && t.parentId !== id);
     await todoStorage.saveTodos(filtered);
   },
 
@@ -106,6 +110,11 @@ export const todoStorage = {
     const todo = todos.find(t => t.id === id);
     if (todo) {
       todo.completed = !todo.completed;
+      // Also toggle all subtasks
+      const subtasks = todos.filter(t => t.parentId === id);
+      subtasks.forEach(subtask => {
+        subtask.completed = todo.completed;
+      });
       await todoStorage.saveTodos(todos);
     }
   },
