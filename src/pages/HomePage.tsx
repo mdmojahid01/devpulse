@@ -91,11 +91,11 @@ export default function HomePage() {
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div>
             <GithubActivity githubData={githubData} />
           </div>
-          <div className="lg:col-span-1">
+          <div className="border-divider relative lg:border-l lg:pl-6">
             <TodoList />
           </div>
         </div>
