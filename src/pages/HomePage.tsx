@@ -1,5 +1,6 @@
 import GithubActivity from "@/components/github/GithubActivity";
 import ThemeToggle from "@/components/ThemeToggle";
+import TodoList from "@/components/TodoList";
 import { Button, Tooltip } from "@heroui/react";
 import { FiRefreshCw } from "react-icons/fi";
 import { FaGoogle } from "react-icons/fa";
@@ -90,8 +91,13 @@ export default function HomePage() {
             />
           </div>
         </div>
-        <div className="">
-          <GithubActivity githubData={githubData} />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2">
+            <GithubActivity githubData={githubData} />
+          </div>
+          <div className="lg:col-span-1">
+            <TodoList />
+          </div>
         </div>
       </div>
     </main>
