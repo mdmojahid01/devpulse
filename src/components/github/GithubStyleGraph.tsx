@@ -1,12 +1,22 @@
 import AppTooltip from "@/components/ui/AppTooltip";
 import { formatDate, parseDateString } from "@/lib/dateFormat";
 import { getMonthLabelsWithPositions, LEVEL_COLORS } from "@/lib/githubUtils";
+import { useEffect, useRef } from "react";
 
 function GithubStyleGraph({
   contributions,
 }: Readonly<{
   contributions: Array<{ date: string; count: number; level: number }>;
 }>) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to the right (most recent) on mount
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft =
+        scrollContainerRef.current.scrollWidth;
+    }
+  }, [contributions]);
   // Group contributions by week (Sunday to Saturday)
   const weeks: Array<Array<{ date: string; count: number; level: number }>> =
     [];
@@ -33,7 +43,7 @@ function GithubStyleGraph({
   const monthLabels = getMonthLabelsWithPositions(weeks);
 
   return (
-    <div className="overflow-x-auto">
+    <div ref={scrollContainerRef} className="overflow-x-auto">
       <div className="inline-block min-w-full">
         {/* Month labels */}
         <div className="relative mb-2 flex h-4 gap-0.75">

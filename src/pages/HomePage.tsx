@@ -1,19 +1,35 @@
 import GithubActivity from "@/components/github/GithubActivity";
 import ThemeToggle from "@/components/ThemeToggle";
 import TodoList from "@/components/TodoList";
+import SettingsModal from "@/components/SettingsModal";
+import AppSpinner from "@/components/ui/AppSpinner";
 import { Button, Tooltip } from "@heroui/react";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiSettings } from "react-icons/fi";
 import { FaGoogle } from "react-icons/fa";
 import { useGithubData } from "@/hooks/useGithubData";
-import envConfig from "@/config/envConfig";
+import { useAppConfig } from "@/hooks/useAppConfig";
 import AppButton from "@/components/ui/AppButton";
 import AppInput from "@/components/ui/AppInput";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function HomePage() {
-  const githubData = useGithubData(envConfig.GITHUB_USERNAME);
-  const { refreshData, loading } = githubData;
+  const {
+    config,
+    isConfigured,
+    loading: configLoading,
+    updateConfig,
+  } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  // Auto-show settings on first load if not configured
+  const autoShowSettings = useMemo(
+    () => !configLoading && !isConfigured && !showSettingsModal,
+    [isConfigured, configLoading, showSettingsModal],
+  );
+
+  const githubData = useGithubData(config?.githubUsername || "");
+  const { refreshData, loading } = githubData;
 
   const handleGoogleSearch = () => {
     const query = searchQuery.trim();
@@ -29,6 +45,19 @@ export default function HomePage() {
       handleGoogleSearch();
     }
   };
+
+  // Show full page loader only on initial load
+  if (configLoading) {
+    return (
+      <main className="bg-background flex min-h-screen items-center justify-center">
+        <AppSpinner
+          size="lg"
+          color="accent"
+          label="Loading your dashboard..."
+        />
+      </main>
+    );
+  }
 
   return (
     <main className="bg-background min-h-screen px-4 py-6">
@@ -48,7 +77,7 @@ export default function HomePage() {
                   size="sm"
                   isIconOnly
                   onPress={refreshData}
-                  isDisabled={loading}
+                  isDisabled={loading || !isConfigured}
                 >
                   <FiRefreshCw
                     className={`size-4 ${loading ? "animate-spin" : ""}`}
@@ -71,6 +100,21 @@ export default function HomePage() {
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p className="text-xs">Open Google</p>
+              </Tooltip.Content>
+            </Tooltip>
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={() => setShowSettingsModal(true)}
+                >
+                  <FiSettings className="size-4" />
+                </Button>
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">Settings</p>
               </Tooltip.Content>
             </Tooltip>
             <ThemeToggle />
@@ -100,6 +144,15 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <SettingsModal
+        isOpen={showSettingsModal || autoShowSettings}
+        onClose={() => setShowSettingsModal(false)}
+        onSave={config => {
+          updateConfig(config);
+          setShowSettingsModal(false);
+        }}
+      />
     </main>
   );
 }
