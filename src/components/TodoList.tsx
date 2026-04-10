@@ -10,6 +10,7 @@ import {
   FiCircle,
   FiClock,
   FiCornerDownRight,
+  FiArrowUp,
 } from "react-icons/fi";
 import AppCard from "@/components/ui/AppCard";
 import AppButton from "@/components/ui/AppButton";
@@ -18,7 +19,8 @@ import { formatDate } from "@/lib/dateFormat";
 import type { Todo } from "@/services/todoStorage";
 
 export default function TodoList() {
-  const { todos, loading, error, addTodo, toggleTodo, deleteTodo } = useTodos();
+  const { todos, loading, error, addTodo, toggleTodo, deleteTodo, updateTodo } =
+    useTodos();
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [showInput, setShowInput] = useState(false);
@@ -161,6 +163,13 @@ export default function TodoList() {
       }
     },
     [handleCancel, handleAdd],
+  );
+
+  const handleMoveToToday = useCallback(
+    async (id: string) => {
+      await updateTodo(id, { date: today });
+    },
+    [updateTodo, today],
   );
 
   return (
@@ -409,6 +418,7 @@ export default function TodoList() {
                                 onToggle={toggleTodo}
                                 onDelete={deleteTodo}
                                 onAddSubtask={addTodo}
+                                onMoveToToday={handleMoveToToday}
                               />
                             ))}
                           </div>
@@ -494,6 +504,7 @@ interface TodoItemProps {
     parentId?: string,
   ) => Promise<void>;
   showDate?: boolean;
+  onMoveToToday?: (id: string) => Promise<void>;
 }
 
 function TodoItem({
@@ -503,6 +514,7 @@ function TodoItem({
   onDelete,
   onAddSubtask,
   showDate,
+  onMoveToToday,
 }: Readonly<TodoItemProps>) {
   const [showSubtaskInput, setShowSubtaskInput] = useState(false);
   const [subtaskTitle, setSubtaskTitle] = useState("");
@@ -597,6 +609,23 @@ function TodoItem({
                 <p className="text-xs">
                   {expandedSubtasks ? "Collapse subtasks" : "Expand subtasks"}
                 </p>
+              </Tooltip.Content>
+            </Tooltip>
+          )}
+          {!todo.completed && onMoveToToday && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={() => onMoveToToday(todo.id)}
+                  className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                  prefix={<FiArrowUp className="size-4" />}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">Move to today</p>
               </Tooltip.Content>
             </Tooltip>
           )}
