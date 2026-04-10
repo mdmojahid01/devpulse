@@ -22,7 +22,9 @@ export default function TodoList() {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [showInput, setShowInput] = useState(false);
-  const [expandedPrevious, setExpandedPrevious] = useState(false);
+  const [expandedPreviousPending, setExpandedPreviousPending] = useState(false);
+  const [expandedPreviousCompleted, setExpandedPreviousCompleted] =
+    useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
   const isMac = useMemo(
@@ -66,28 +68,62 @@ export default function TodoList() {
   const previousTodos = todos.filter(
     t => t.date < today && !t.completed && !t.parentId,
   );
+  const previousCompleted = todos.filter(
+    t => t.date < today && t.completed && !t.parentId,
+  );
 
-  // Group previous todos by date
-  const groupedPreviousTodos = useMemo(() => {
+  const countWithSubtasks = useCallback(
+    (parentTodos: Todo[]) => {
+      return parentTodos.reduce((count, parent) => {
+        const subtaskCount = todos.filter(
+          t => t.parentId === parent.id && !t.completed,
+        ).length;
+        return count + 1 + subtaskCount;
+      }, 0);
+    },
+    [todos],
+  );
+
+  // Group previous pending todos by date
+  const groupedPreviousPending = useMemo(() => {
     const groups: Record<string, Todo[]> = {};
+
     previousTodos.forEach(todo => {
       if (!groups[todo.date]) {
         groups[todo.date] = [];
       }
       groups[todo.date].push(todo);
     });
+
     // Sort dates in descending order (most recent first)
     return Object.entries(groups).sort(([dateA], [dateB]) =>
       dateB.localeCompare(dateA),
     );
   }, [previousTodos]);
 
+  // Group previous completed todos by date
+  const groupedPreviousCompleted = useMemo(() => {
+    const groups: Record<string, Todo[]> = {};
+
+    previousCompleted.forEach(todo => {
+      if (!groups[todo.date]) {
+        groups[todo.date] = [];
+      }
+      groups[todo.date].push(todo);
+    });
+
+    // Sort dates in descending order (most recent first)
+    return Object.entries(groups).sort(([dateA], [dateB]) =>
+      dateB.localeCompare(dateA),
+    );
+  }, [previousCompleted]);
+
   const analytics = useMemo(() => {
     const totalPending = todos.filter(t => !t.completed).length;
-    const todayPending = todayTodos.length;
+    const todayPending = countWithSubtasks(todayTodos);
     const totalCompleted = todos.filter(t => t.completed).length;
     return { totalPending, todayPending, totalCompleted };
-  }, [todos, todayTodos]);
+  }, [todos, todayTodos, countWithSubtasks]);
 
   const handleAdd = useCallback(async () => {
     if (newTitle.trim()) {
@@ -133,11 +169,11 @@ export default function TodoList() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <AppCard className="p-4">
           <AppCard.Content className="flex items-center gap-3">
-            <FiCircle className="text-accent text-2xl" />
+            <FiClock className="text-warning text-2xl" />
             <div>
-              <p className="text-muted text-sm">Total Pending</p>
+              <p className="text-muted text-sm">Today Pending</p>
               <p className="text-center text-2xl font-bold">
-                {analytics.totalPending}
+                {analytics.todayPending}
               </p>
             </div>
           </AppCard.Content>
@@ -145,11 +181,11 @@ export default function TodoList() {
 
         <AppCard className="p-4">
           <AppCard.Content className="flex items-center gap-3">
-            <FiClock className="text-warning text-2xl" />
+            <FiCircle className="text-accent text-2xl" />
             <div>
-              <p className="text-muted text-sm">Today Pending</p>
+              <p className="text-muted text-sm">Total Pending</p>
               <p className="text-center text-2xl font-bold">
-                {analytics.todayPending}
+                {analytics.totalPending}
               </p>
             </div>
           </AppCard.Content>
@@ -225,7 +261,7 @@ export default function TodoList() {
               {/* Today's Tasks */}
               <div className="space-y-2">
                 <h3 className="text-muted text-xs font-medium uppercase">
-                  Today
+                  Today ({countWithSubtasks(todayTodos)})
                 </h3>
 
                 {todayTodos.map(todo => (
@@ -310,7 +346,12 @@ export default function TodoList() {
                 {todayCompleted.length > 0 && (
                   <div className="mt-4 space-y-2">
                     <h4 className="text-muted text-xs font-medium">
-                      Completed
+                      Completed (
+                      {
+                        todos.filter(t => t.date === today && t.completed)
+                          .length
+                      }
+                      )
                     </h4>
                     {todayCompleted.map(todo => (
                       <TodoItem
@@ -331,9 +372,11 @@ export default function TodoList() {
                 <div className="border-divider border-t pt-4">
                   <AppButton
                     variant="ghost"
-                    onPress={() => setExpandedPrevious(!expandedPrevious)}
+                    onPress={() =>
+                      setExpandedPreviousPending(!expandedPreviousPending)
+                    }
                     suffix={
-                      expandedPrevious ? (
+                      expandedPreviousPending ? (
                         <FiChevronUp className="size-4" />
                       ) : (
                         <FiChevronDown className="size-4" />
@@ -341,18 +384,78 @@ export default function TodoList() {
                     }
                     className="text-muted hover:text-foreground w-full justify-between text-xs font-medium uppercase"
                   >
-                    Previous ({previousTodos.length})
+                    <div className="flex items-center gap-2">
+                      <FiClock className="size-3.5" />
+                      Previous Pending ({countWithSubtasks(previousTodos)})
+                    </div>
                   </AppButton>
 
-                  {expandedPrevious && (
+                  {expandedPreviousPending && (
                     <div className="mt-2 max-h-64 space-y-4 overflow-y-auto">
-                      {groupedPreviousTodos.map(([date, dateTodos]) => {
+                      {groupedPreviousPending.map(([date, dateTodos]) => {
                         const isYesterday = date === yesterday;
 
                         return (
                           <div key={date} className="space-y-2">
                             <h4 className="text-muted text-xs font-medium">
-                              {isYesterday ? "Yesterday" : formatDate(date)}
+                              {isYesterday ? "Yesterday" : formatDate(date)} (
+                              {countWithSubtasks(dateTodos)})
+                            </h4>
+                            {dateTodos.map(todo => (
+                              <TodoItem
+                                key={todo.id}
+                                todo={todo}
+                                todos={todos}
+                                onToggle={toggleTodo}
+                                onDelete={deleteTodo}
+                                onAddSubtask={addTodo}
+                              />
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Previous Completed Tasks */}
+              {previousCompleted.length > 0 && (
+                <div className="border-divider border-t pt-4">
+                  <AppButton
+                    variant="ghost"
+                    onPress={() =>
+                      setExpandedPreviousCompleted(!expandedPreviousCompleted)
+                    }
+                    suffix={
+                      expandedPreviousCompleted ? (
+                        <FiChevronUp className="size-4" />
+                      ) : (
+                        <FiChevronDown className="size-4" />
+                      )
+                    }
+                    className="text-muted hover:text-foreground w-full justify-between text-xs font-medium uppercase"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FiCheckCircle className="size-3.5" />
+                      Previous Completed (
+                      {todos.filter(t => t.date < today && t.completed).length})
+                    </div>
+                  </AppButton>
+
+                  {expandedPreviousCompleted && (
+                    <div className="mt-2 max-h-64 space-y-4 overflow-y-auto">
+                      {groupedPreviousCompleted.map(([date, dateTodos]) => {
+                        const isYesterday = date === yesterday;
+                        const dateCompletedCount = todos.filter(
+                          t => t.date === date && t.completed,
+                        ).length;
+
+                        return (
+                          <div key={date} className="space-y-2">
+                            <h4 className="text-muted text-xs font-medium">
+                              {isYesterday ? "Yesterday" : formatDate(date)} (
+                              {dateCompletedCount})
                             </h4>
                             {dateTodos.map(todo => (
                               <TodoItem
@@ -416,6 +519,7 @@ function TodoItem({
     if (subtaskTitle.trim()) {
       await onAddSubtask(subtaskTitle.trim(), undefined, todo.date, todo.id);
       setSubtaskTitle("");
+      setShowSubtaskInput(false);
     }
   }, [subtaskTitle, onAddSubtask, todo.date, todo.id]);
 
@@ -496,21 +600,23 @@ function TodoItem({
               </Tooltip.Content>
             </Tooltip>
           )}
-          <Tooltip>
-            <Tooltip.Trigger>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                isIconOnly
-                onPress={() => setShowSubtaskInput(!showSubtaskInput)}
-                className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
-                prefix={<FiCornerDownRight className="size-4" />}
-              />
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <p className="text-xs">Add subtask</p>
-            </Tooltip.Content>
-          </Tooltip>
+          {!todo.completed && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={() => setShowSubtaskInput(!showSubtaskInput)}
+                  className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                  prefix={<FiCornerDownRight className="size-4" />}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">Add subtask</p>
+              </Tooltip.Content>
+            </Tooltip>
+          )}
           <Tooltip>
             <Tooltip.Trigger>
               <AppButton
