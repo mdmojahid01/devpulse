@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import {
   readConfig,
   writeConfig,
+  DEFAULT_UI_VISIBILITY,
   type AppConfig,
 } from "@/services/configStorage";
 import envConfig from "@/config/envConfig";
@@ -20,9 +21,16 @@ export const useAppConfig = () => {
       if (!storedConfig && envConfig.GITHUB_USERNAME) {
         const envBasedConfig: AppConfig = {
           githubUsername: envConfig.GITHUB_USERNAME,
+          uiVisibility: DEFAULT_UI_VISIBILITY,
         };
         await writeConfig(envBasedConfig);
         storedConfig = envBasedConfig;
+      }
+
+      // Ensure uiVisibility is always set
+      if (storedConfig && !storedConfig.uiVisibility) {
+        storedConfig.uiVisibility = DEFAULT_UI_VISIBILITY;
+        await writeConfig(storedConfig);
       }
 
       setConfig(storedConfig);

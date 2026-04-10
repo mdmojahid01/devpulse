@@ -1,12 +1,15 @@
-import { Modal, Surface } from "@heroui/react";
+import { Modal, Surface, Switch } from "@heroui/react";
 import AppInput from "@/components/ui/AppInput";
 import { useState, useEffect } from "react";
 import {
   readConfig,
   writeConfig,
+  DEFAULT_UI_VISIBILITY,
   type AppConfig,
+  type UIVisibility,
 } from "@/services/configStorage";
 import AppButton from "./ui/AppButton";
+import AppLabel from "./ui/AppLabel";
 
 type SettingsModalProps = Readonly<{
   isOpen: boolean;
@@ -22,6 +25,9 @@ export default function SettingsModal({
   const [githubUsername, setGithubUsername] = useState("");
   const [leetcodeUsername, setLeetcodeUsername] = useState("");
   const [customQuote, setCustomQuote] = useState("");
+  const [uiVisibility, setUiVisibility] = useState<UIVisibility>(
+    DEFAULT_UI_VISIBILITY,
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -31,6 +37,7 @@ export default function SettingsModal({
           setGithubUsername(config.githubUsername || "");
           setLeetcodeUsername(config.leetcodeUsername || "");
           setCustomQuote(config.customQuote || "");
+          setUiVisibility(config.uiVisibility || DEFAULT_UI_VISIBILITY);
         }
       });
     }
@@ -46,11 +53,12 @@ export default function SettingsModal({
       githubUsername: githubUsername.trim(),
       leetcodeUsername: leetcodeUsername.trim() || undefined,
       customQuote: customQuote.trim() || undefined,
+      uiVisibility,
     };
 
     await writeConfig(config);
-    setLoading(false);
     onSave(config);
+    setLoading(false);
     onClose();
   };
 
@@ -70,33 +78,112 @@ export default function SettingsModal({
           <Modal.Body className="p-2">
             <Surface>
               <div className="space-y-5">
-                <AppInput
-                  label="GitHub Username"
-                  placeholder="Enter your GitHub username"
-                  value={githubUsername}
-                  onChange={setGithubUsername}
-                  isRequired
-                  fullWidth
-                  variant="secondary"
-                  errorMessage="Github username is required"
-                  isInvalid={!githubUsername.trim() && !loading}
-                />
-                <AppInput
-                  label="LeetCode Username (Optional)"
-                  placeholder="Enter your LeetCode username"
-                  value={leetcodeUsername}
-                  onChange={setLeetcodeUsername}
-                  fullWidth
-                  variant="secondary"
-                />
-                <AppInput
-                  label="Custom Quote (Optional)"
-                  placeholder="Enter your motivational quote"
-                  value={customQuote}
-                  onChange={setCustomQuote}
-                  fullWidth
-                  variant="secondary"
-                />
+                <div>
+                  <h3 className="text-foreground mb-3 text-sm font-semibold">
+                    Account Settings
+                  </h3>
+                  <div className="space-y-4">
+                    <AppInput
+                      label="GitHub Username"
+                      placeholder="Enter your GitHub username"
+                      value={githubUsername}
+                      onChange={setGithubUsername}
+                      isRequired
+                      fullWidth
+                      variant="secondary"
+                      errorMessage="Github username is required"
+                      isInvalid={!githubUsername.trim() && !loading}
+                    />
+                    <AppInput
+                      label="LeetCode Username (Optional)"
+                      placeholder="Enter your LeetCode username"
+                      value={leetcodeUsername}
+                      onChange={setLeetcodeUsername}
+                      fullWidth
+                      variant="secondary"
+                    />
+                    <AppInput
+                      label="Custom Quote (Optional)"
+                      placeholder="Enter your motivational quote"
+                      value={customQuote}
+                      onChange={setCustomQuote}
+                      fullWidth
+                      variant="secondary"
+                    />
+                  </div>
+                </div>
+
+                <div className="border-divider border-t pt-4">
+                  <h3 className="text-foreground mb-3 text-sm font-semibold">
+                    UI Visibility
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <AppLabel>Show Search Bar</AppLabel>
+                      <Switch
+                        isSelected={uiVisibility.showSearch}
+                        onChange={checked =>
+                          setUiVisibility(prev => ({
+                            ...prev,
+                            showSearch: checked,
+                          }))
+                        }
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <AppLabel>Show GitHub Activity</AppLabel>
+                      <Switch
+                        isSelected={uiVisibility.showGithub}
+                        onChange={checked =>
+                          setUiVisibility(prev => ({
+                            ...prev,
+                            showGithub: checked,
+                          }))
+                        }
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <AppLabel>Show Todo List</AppLabel>
+                      <Switch
+                        isSelected={uiVisibility.showTodo}
+                        onChange={checked =>
+                          setUiVisibility(prev => ({
+                            ...prev,
+                            showTodo: checked,
+                          }))
+                        }
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <AppLabel>Show LeetCode Activity</AppLabel>
+                      <Switch
+                        isSelected={uiVisibility.showLeetcode}
+                        onChange={checked =>
+                          setUiVisibility(prev => ({
+                            ...prev,
+                            showLeetcode: checked,
+                          }))
+                        }
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
+                  </div>
+                </div>
               </div>
             </Surface>
           </Modal.Body>

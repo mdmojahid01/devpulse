@@ -1,9 +1,24 @@
 import { storage } from "./storage";
 
+export type UIVisibility = {
+  showGithub: boolean;
+  showTodo: boolean;
+  showSearch: boolean;
+  showLeetcode: boolean;
+};
+
 export type AppConfig = {
   githubUsername: string;
   leetcodeUsername?: string;
   customQuote?: string;
+  uiVisibility?: UIVisibility;
+};
+
+export const DEFAULT_UI_VISIBILITY: UIVisibility = {
+  showGithub: true,
+  showTodo: true,
+  showSearch: true,
+  showLeetcode: true,
 };
 
 const CONFIG_STORAGE_KEY = "devpulse_config";

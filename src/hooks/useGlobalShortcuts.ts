@@ -7,6 +7,7 @@ export interface GlobalShortcut {
   ctrlOrCmd: boolean;
   handler: ShortcutHandler;
   description: string;
+  enabled?: boolean;
 }
 
 /**
@@ -17,6 +18,8 @@ export function useGlobalShortcuts(shortcuts: GlobalShortcut[]) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       for (const shortcut of shortcuts) {
+        if (shortcut.enabled === false) continue;
+
         const modifierPressed = shortcut.ctrlOrCmd
           ? e.metaKey || e.ctrlKey
           : true;

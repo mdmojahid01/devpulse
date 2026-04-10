@@ -13,6 +13,7 @@ import AppInput from "@/components/ui/AppInput";
 import { useMemo, useRef, useState } from "react";
 import AppKbd from "@/components/ui/AppKbd";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
+import { DEFAULT_UI_VISIBILITY } from "@/services/configStorage";
 
 export default function HomePage() {
   const {
@@ -21,6 +22,7 @@ export default function HomePage() {
     loading: configLoading,
     updateConfig,
   } = useAppConfig();
+  const visibility = config?.uiVisibility || DEFAULT_UI_VISIBILITY;
   const [searchQuery, setSearchQuery] = useState("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -40,6 +42,7 @@ export default function HomePage() {
       ctrlOrCmd: true,
       handler: () => searchInputRef.current?.focus(),
       description: "Focus search",
+      enabled: visibility.showSearch,
     },
   ]);
 
@@ -134,30 +137,40 @@ export default function HomePage() {
             <ThemeToggle />
           </div>
         </div>
-        <div className="flex justify-center">
-          <div className="w-full max-w-2xl">
-            <AppInput
-              ref={searchInputRef}
-              placeholder="Search Google..."
-              ariaLabel="Search Google"
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onKeyDown={handleKeyPress}
-              autoFocus
-              fullWidth
-              inputGroupClassName="h-14 rounded-full"
-              prefix={<FaGoogle className="text-muted size-5" />}
-              suffix={<AppKbd keyValue="E" cmdOrCtrl={true} className="mr-2" />}
-            />
+        {visibility.showSearch && (
+          <div className="flex justify-center">
+            <div className="w-full max-w-2xl">
+              <AppInput
+                ref={searchInputRef}
+                placeholder="Search Google..."
+                ariaLabel="Search Google"
+                value={searchQuery}
+                onChange={setSearchQuery}
+                onKeyDown={handleKeyPress}
+                autoFocus
+                fullWidth
+                inputGroupClassName="h-14 rounded-full"
+                prefix={<FaGoogle className="text-muted size-5" />}
+                suffix={
+                  <AppKbd keyValue="E" cmdOrCtrl={true} className="mr-2" />
+                }
+              />
+            </div>
           </div>
-        </div>
+        )}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div>
-            <GithubActivity githubData={githubData} />
-          </div>
-          <div className="border-divider relative lg:border-l lg:pl-6">
-            <TodoList />
-          </div>
+          {visibility.showGithub && (
+            <div>
+              <GithubActivity githubData={githubData} />
+            </div>
+          )}
+          {visibility.showTodo && (
+            <div
+              className={`border-divider relative ${visibility.showGithub ? "lg:border-l lg:pl-6" : ""}`}
+            >
+              <TodoList />
+            </div>
+          )}
         </div>
       </div>
 
