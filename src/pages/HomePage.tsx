@@ -10,7 +10,9 @@ import { useGithubData } from "@/hooks/useGithubData";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import AppButton from "@/components/ui/AppButton";
 import AppInput from "@/components/ui/AppInput";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
+import AppKbd from "@/components/ui/AppKbd";
+import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 
 export default function HomePage() {
   const {
@@ -21,6 +23,7 @@ export default function HomePage() {
   } = useAppConfig();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-show settings on first load if not configured
   const autoShowSettings = useMemo(
@@ -30,6 +33,15 @@ export default function HomePage() {
 
   const githubData = useGithubData(config?.githubUsername || "");
   const { refreshData, loading } = githubData;
+
+  useGlobalShortcuts([
+    {
+      key: "e",
+      ctrlOrCmd: true,
+      handler: () => searchInputRef.current?.focus(),
+      description: "Focus search",
+    },
+  ]);
 
   const handleGoogleSearch = () => {
     const query = searchQuery.trim();
@@ -99,7 +111,9 @@ export default function HomePage() {
                 />
               </Tooltip.Trigger>
               <Tooltip.Content>
-                <p className="text-xs">Open Google</p>
+                <p className="flex items-center gap-1 text-xs">
+                  Open Google <AppKbd keyValue="G" cmdOrCtrl={true} />
+                </p>
               </Tooltip.Content>
             </Tooltip>
             <Tooltip>
@@ -123,6 +137,7 @@ export default function HomePage() {
         <div className="flex justify-center">
           <div className="w-full max-w-2xl">
             <AppInput
+              ref={searchInputRef}
               placeholder="Search Google..."
               ariaLabel="Search Google"
               value={searchQuery}
@@ -132,6 +147,7 @@ export default function HomePage() {
               fullWidth
               inputGroupClassName="h-14 rounded-full"
               prefix={<FaGoogle className="text-muted size-5" />}
+              suffix={<AppKbd keyValue="E" cmdOrCtrl={true} className="mr-2" />}
             />
           </div>
         </div>

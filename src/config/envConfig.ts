@@ -8,6 +8,7 @@ const envConfig = {
   NODE_ENV: import.meta.env.MODE,
   IS_CHROME_EXTENSION: chrome !== undefined && !!chrome.runtime?.id,
   GITHUB_BASE_URL: "https://github.com",
+  IS_MAC: globalThis?.navigator?.userAgent.includes("Mac") ?? false,
 };
 
 export default envConfig;

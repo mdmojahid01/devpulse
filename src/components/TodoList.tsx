@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useTodos } from "@/hooks/useTodos";
-import { Checkbox, Kbd, Tooltip } from "@heroui/react";
+import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
+import { Checkbox, Tooltip } from "@heroui/react";
 import {
   FiPlus,
   FiTrash2,
@@ -17,6 +18,7 @@ import AppButton from "@/components/ui/AppButton";
 import AppInput from "@/components/ui/AppInput";
 import { formatDate } from "@/lib/dateFormat";
 import type { Todo } from "@/services/todoStorage";
+import AppKbd from "./ui/AppKbd";
 
 export default function TodoList() {
   const { todos, loading, error, addTodo, toggleTodo, deleteTodo, updateTodo } =
@@ -29,11 +31,6 @@ export default function TodoList() {
     useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  const isMac = useMemo(
-    () => globalThis?.navigator?.userAgent.includes("Mac") ?? false,
-    [],
-  );
-
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
   const yesterday = useMemo(() => {
     const date = new Date();
@@ -42,17 +39,19 @@ export default function TodoList() {
   }, []);
 
   // Keyboard shortcut: Cmd+K (Mac) or Ctrl+K (Windows/Linux)
-  const handleGlobalKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault();
-      setShowInput(prev => !prev);
-    }
-  }, []);
+  const todoShortcuts = useMemo(
+    () => [
+      {
+        key: "k",
+        ctrlOrCmd: true,
+        handler: () => setShowInput(prev => !prev),
+        description: "Toggle add task",
+      },
+    ],
+    [],
+  );
 
-  useEffect(() => {
-    globalThis.addEventListener("keydown", handleGlobalKeyDown);
-    return () => globalThis.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [handleGlobalKeyDown]);
+  useGlobalShortcuts(todoShortcuts);
 
   // Scroll form into view when it appears
   useEffect(() => {
@@ -242,12 +241,7 @@ export default function TodoList() {
               prefix={<FiPlus className="size-4" />}
               suffix={
                 <div className="flex items-center gap-1">
-                  <Kbd>
-                    <Kbd.Abbr keyValue={isMac ? "command" : "ctrl"} />
-                  </Kbd>
-                  <Kbd>
-                    <Kbd.Content>K</Kbd.Content>
-                  </Kbd>
+                  <AppKbd keyValue="K" cmdOrCtrl={true} />
                 </div>
               }
             >
@@ -315,14 +309,7 @@ export default function TodoList() {
                           onPress={handleAdd}
                           prefix={
                             <div className="flex items-center gap-0.5">
-                              <Kbd>
-                                <Kbd.Abbr
-                                  keyValue={isMac ? "command" : "ctrl"}
-                                />
-                              </Kbd>
-                              <Kbd>
-                                <Kbd.Abbr keyValue="enter" />
-                              </Kbd>
+                              <AppKbd keyValue="enter" cmdOrCtrl={true} />
                             </div>
                           }
                         >
@@ -332,11 +319,7 @@ export default function TodoList() {
                           size="sm"
                           variant="ghost"
                           onPress={handleCancel}
-                          prefix={
-                            <Kbd>
-                              <Kbd.Abbr keyValue="escape" />
-                            </Kbd>
-                          }
+                          prefix={<AppKbd keyValue="escape" />}
                         >
                           Cancel
                         </AppButton>
