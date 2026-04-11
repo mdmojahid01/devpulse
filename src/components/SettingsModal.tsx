@@ -10,6 +10,9 @@ import {
 } from "@/services/configStorage";
 import AppButton from "./ui/AppButton";
 import AppLabel from "./ui/AppLabel";
+import AppKbd from "./ui/AppKbd";
+import { FiBookmark } from "react-icons/fi";
+import envConfig from "@/config/envConfig";
 
 type SettingsModalProps = Readonly<{
   isOpen: boolean;
@@ -69,8 +72,8 @@ export default function SettingsModal({
       isDismissable={false}
       variant="blur"
     >
-      <Modal.Container>
-        <Modal.Dialog className="sm:max-w-md">
+      <Modal.Container size="lg">
+        <Modal.Dialog>
           <Modal.CloseTrigger />
           <Modal.Header>
             <Modal.Heading>Settings</Modal.Heading>
@@ -181,6 +184,41 @@ export default function SettingsModal({
                           <Switch.Thumb />
                         </Switch.Control>
                       </Switch>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-divider border-t pt-4">
+                  <div className="bg-accent/10 border-accent/20 flex gap-2.5 rounded-lg border p-3">
+                    <div className="flex-shrink-0">
+                      <FiBookmark className="text-accent size-4" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-foreground mb-1 text-xs font-semibold">
+                        Bookmarks Tip
+                      </h3>
+                      <p className="text-muted mb-1.5 text-xs leading-relaxed">
+                        Toggle Chrome's bookmark bar:
+                      </p>
+                      <div className="flex items-center gap-1">
+                        {envConfig.IS_MAC ? (
+                          <>
+                            <AppKbd keyValue="⌘" />
+                            <span className="text-muted text-xs">+</span>
+                            <AppKbd keyValue="Shift" />
+                            <span className="text-muted text-xs">+</span>
+                            <AppKbd keyValue="B" />
+                          </>
+                        ) : (
+                          <>
+                            <AppKbd keyValue="Ctrl" />
+                            <span className="text-muted text-xs">+</span>
+                            <AppKbd keyValue="Shift" />
+                            <span className="text-muted text-xs">+</span>
+                            <AppKbd keyValue="B" />
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
