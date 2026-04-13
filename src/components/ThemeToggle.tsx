@@ -1,6 +1,7 @@
-import { Button, Dropdown, Label } from "@heroui/react";
+import { Dropdown, Label } from "@heroui/react";
 import { FaDesktop, FaMoon, FaSun } from "react-icons/fa";
 import { useTheme } from "@/hooks/useTheme";
+import AppButton from "./ui/AppButton";
 
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -16,9 +17,9 @@ export default function ThemeToggle() {
 
   return (
     <Dropdown>
-      <Button variant="ghost" size="sm" isIconOnly>
+      <AppButton variant="outline" size="sm" isIconOnly>
         <CurrentIcon className="size-4" />
-      </Button>
+      </AppButton>
       <Dropdown.Popover>
         <Dropdown.Menu
           selectedKeys={[theme]}

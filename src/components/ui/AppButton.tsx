@@ -38,9 +38,9 @@ function AppButton({
   size = "md",
   fullWidth,
   isDisabled,
-  suffix,
-  prefix,
-  isIconOnly,
+  suffix = null,
+  prefix = null,
+  isIconOnly = false,
   isPending,
   loadingText,
   className,
@@ -65,11 +65,17 @@ function AppButton({
     >
       {({ isPending: pending }) => (
         <>
-          {pending ? <AppSpinner color="current" size="sm" /> : prefix}
+          {pending && <AppSpinner color="current" size="sm" />}
 
-          {!isIconOnly && (pending ? loadingText || children : children)}
+          {!pending && prefix && !isIconOnly && prefix}
 
-          {!pending && suffix}
+          {!pending && isIconOnly
+            ? (prefix ?? suffix ?? children)
+            : pending
+              ? loadingText || children
+              : children}
+
+          {!pending && suffix && !isIconOnly && suffix}
         </>
       )}
     </Button>

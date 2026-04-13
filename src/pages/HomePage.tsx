@@ -3,8 +3,9 @@ import ThemeToggle from "@/components/ThemeToggle";
 import TodoList from "@/components/TodoList";
 import SettingsModal from "@/components/SettingsModal";
 import AppSpinner from "@/components/ui/AppSpinner";
-import { Button, Tooltip } from "@heroui/react";
-import { FiRefreshCw, FiSettings } from "react-icons/fi";
+import Footer from "@/components/Footer";
+import { Tooltip } from "@heroui/react";
+import { FiRefreshCw, FiSettings, FiGithub } from "react-icons/fi";
 import { FaGoogle } from "react-icons/fa";
 import { useGithubData } from "@/hooks/useGithubData";
 import { useAppConfig } from "@/hooks/useAppConfig";
@@ -14,6 +15,8 @@ import { useMemo, useRef, useState } from "react";
 import AppKbd from "@/components/ui/AppKbd";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { DEFAULT_UI_VISIBILITY } from "@/services/configStorage";
+import AppLink from "@/components/ui/AppLink";
+import { site } from "@/config/site";
 
 export default function HomePage() {
   const {
@@ -87,8 +90,8 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Tooltip>
               <Tooltip.Trigger>
-                <Button
-                  variant="ghost"
+                <AppButton
+                  variant="outline"
                   size="sm"
                   isIconOnly
                   onPress={refreshData}
@@ -97,7 +100,7 @@ export default function HomePage() {
                   <FiRefreshCw
                     className={`size-4 ${loading ? "animate-spin" : ""}`}
                   />
-                </Button>
+                </AppButton>
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p className="text-xs">Refresh data</p>
@@ -106,7 +109,7 @@ export default function HomePage() {
             <Tooltip>
               <Tooltip.Trigger>
                 <AppButton
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   isIconOnly
                   onPress={handleGoogleSearch}
@@ -121,20 +124,40 @@ export default function HomePage() {
             </Tooltip>
             <Tooltip>
               <Tooltip.Trigger>
-                <Button
-                  variant="ghost"
+                <AppButton
+                  variant="outline"
                   size="sm"
                   isIconOnly
                   onPress={() => setShowSettingsModal(true)}
                 >
                   <FiSettings className="size-4" />
-                </Button>
+                </AppButton>
               </Tooltip.Trigger>
               <Tooltip.Content>
                 <p className="text-xs">Settings</p>
               </Tooltip.Content>
             </Tooltip>
             <ThemeToggle />
+
+            <div className="bg-muted mx-1 h-5 w-0.5" />
+
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppLink
+                  asButton
+                  variant="outline"
+                  size="sm"
+                  isIconOnly
+                  href={site.githubRepoLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  suffix={<FiGithub className="size-4" />}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">View on GitHub</p>
+              </Tooltip.Content>
+            </Tooltip>
           </div>
         </div>
         {visibility.showSearch && (
@@ -182,6 +205,7 @@ export default function HomePage() {
           setShowSettingsModal(false);
         }}
       />
+      <Footer />
     </main>
   );
 }

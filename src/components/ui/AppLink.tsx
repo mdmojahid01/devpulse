@@ -39,8 +39,8 @@ const AppLink = React.forwardRef<HTMLAnchorElement, AppLinkProps>(
     {
       href,
       children,
-      prefix,
-      suffix,
+      prefix = null,
+      suffix = null,
       asButton = false,
       isIconOnly = false,
       variant,
@@ -93,7 +93,7 @@ const AppLink = React.forwardRef<HTMLAnchorElement, AppLinkProps>(
           </LinkIcon>
         )}
 
-        {isIconOnly ? prefix || children : children}
+        {isIconOnly ? (prefix ?? suffix ?? children) : children}
 
         {suffix && !isIconOnly && (
           <LinkIcon
