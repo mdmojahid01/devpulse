@@ -12,6 +12,9 @@ import {
   FiClock,
   FiCornerDownRight,
   FiArrowUp,
+  FiEdit2,
+  FiCheck,
+  FiX,
 } from "react-icons/fi";
 import AppCard from "@/components/ui/AppCard";
 import AppButton from "@/components/ui/AppButton";
@@ -281,6 +284,7 @@ export default function TodoList() {
                     todos={todos}
                     onToggle={toggleTodo}
                     onDelete={deleteTodo}
+                    onUpdate={updateTodo}
                     onAddSubtask={addTodo}
                   />
                 ))}
@@ -359,6 +363,7 @@ export default function TodoList() {
                         todos={todos}
                         onToggle={toggleTodo}
                         onDelete={deleteTodo}
+                        onUpdate={updateTodo}
                         onAddSubtask={addTodo}
                       />
                     ))}
@@ -407,6 +412,7 @@ export default function TodoList() {
                                 todos={todos}
                                 onToggle={toggleTodo}
                                 onDelete={deleteTodo}
+                                onUpdate={updateTodo}
                                 onAddSubtask={addTodo}
                                 onMoveToToday={handleMoveToToday}
                               />
@@ -464,6 +470,7 @@ export default function TodoList() {
                                 todos={todos}
                                 onToggle={toggleTodo}
                                 onDelete={deleteTodo}
+                                onUpdate={updateTodo}
                                 onAddSubtask={addTodo}
                               />
                             ))}
@@ -487,6 +494,7 @@ interface TodoItemProps {
   todos: Todo[];
   onToggle: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onUpdate: (id: string, updates: Partial<Todo>) => Promise<void>;
   onAddSubtask: (
     title: string,
     description?: string,
@@ -502,6 +510,7 @@ function TodoItem({
   todos,
   onToggle,
   onDelete,
+  onUpdate,
   onAddSubtask,
   showDate,
   onMoveToToday,
@@ -510,6 +519,11 @@ function TodoItem({
   const [subtaskTitle, setSubtaskTitle] = useState("");
   const [expandedSubtasks, setExpandedSubtasks] = useState(true);
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(todo.title);
+  const [editDescription, setEditDescription] = useState(
+    todo.description || "",
+  );
 
   const subtasks = useMemo(
     () => todos.filter(t => t.parentId === todo.id),
@@ -545,114 +559,200 @@ function TodoItem({
     [handleAddSubtask, handleCancelSubtask],
   );
 
+  const handleSaveEdit = useCallback(async () => {
+    if (editTitle.trim()) {
+      await onUpdate(todo.id, {
+        title: editTitle.trim(),
+        description: editDescription.trim() || undefined,
+      });
+      setIsEditing(false);
+    }
+  }, [editTitle, editDescription, onUpdate, todo.id]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditTitle(todo.title);
+    setEditDescription(todo.description || "");
+  }, [todo.title, todo.description]);
+
+  const handleEditKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        handleSaveEdit();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancelEdit();
+      }
+    },
+    [handleSaveEdit, handleCancelEdit],
+  );
+
   return (
     <div className="space-y-1">
-      <div
-        className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div className="flex items-center">
-          <Checkbox
-            isSelected={todo.completed}
-            onChange={() => onToggle(todo.id)}
-            variant={isHovered ? "primary" : "secondary"}
-          >
-            <Checkbox.Control className="size-4">
-              <Checkbox.Indicator />
-            </Checkbox.Control>
-          </Checkbox>
+      {isEditing ? (
+        <div className="border-divider space-y-2 rounded-lg border p-3">
+          <AppInput
+            placeholder="Task title"
+            ariaLabel="Task title"
+            value={editTitle}
+            onChange={setEditTitle}
+            autoFocus
+            fullWidth
+            onKeyDown={handleEditKeyDown}
+          />
+          <AppInput
+            placeholder="Description (optional)"
+            ariaLabel="Task description"
+            value={editDescription}
+            onChange={setEditDescription}
+            fullWidth
+            onKeyDown={handleEditKeyDown}
+          />
+          <div className="flex gap-2">
+            <AppButton
+              size="sm"
+              variant="primary"
+              onPress={handleSaveEdit}
+              prefix={<FiCheck className="size-4" />}
+            >
+              Save
+            </AppButton>
+            <AppButton
+              size="sm"
+              variant="ghost"
+              onPress={handleCancelEdit}
+              prefix={<FiX className="size-4" />}
+            >
+              Cancel
+            </AppButton>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p
-            className={`text-sm ${todo.completed ? "text-muted line-through" : "text-foreground"}`}
-          >
-            {todo.title}
-          </p>
-          {todo.description && (
-            <p className="text-muted text-xs">{todo.description}</p>
-          )}
-          {showDate && (
-            <p className="text-muted text-xs">{formatDate(todo.date)}</p>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          {hasSubtasks && (
+      ) : (
+        <div
+          className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className="flex items-center">
+            <Checkbox
+              isSelected={todo.completed}
+              onChange={() => onToggle(todo.id)}
+              variant={isHovered ? "primary" : "secondary"}
+            >
+              <Checkbox.Control className="size-4">
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+            </Checkbox>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p
+              className={`text-sm ${todo.completed ? "text-muted line-through" : "text-foreground"}`}
+            >
+              {todo.title}
+            </p>
+            {todo.description && (
+              <p className="text-muted text-xs">{todo.description}</p>
+            )}
+            {showDate && (
+              <p className="text-muted text-xs">{formatDate(todo.date)}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-1">
+            {hasSubtasks && (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    isIconOnly
+                    onPress={() => setExpandedSubtasks(!expandedSubtasks)}
+                    className="text-muted hover:text-foreground shrink-0"
+                    prefix={
+                      expandedSubtasks ? (
+                        <FiChevronUp className="size-4" />
+                      ) : (
+                        <FiChevronDown className="size-4" />
+                      )
+                    }
+                  />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p className="text-xs">
+                    {expandedSubtasks ? "Collapse subtasks" : "Expand subtasks"}
+                  </p>
+                </Tooltip.Content>
+              </Tooltip>
+            )}
+            {!todo.completed && onMoveToToday && (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <AppButton
+                    variant="ghost"
+                    size="sm"
+                    isIconOnly
+                    onPress={() => onMoveToToday(todo.id)}
+                    className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                    prefix={<FiArrowUp className="size-4" />}
+                  />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p className="text-xs">Move to today</p>
+                </Tooltip.Content>
+              </Tooltip>
+            )}
+            {!todo.completed && (
+              <>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <AppButton
+                      variant="ghost"
+                      size="sm"
+                      isIconOnly
+                      onPress={() => setIsEditing(true)}
+                      className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                      prefix={<FiEdit2 className="size-4" />}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p className="text-xs">Edit task</p>
+                  </Tooltip.Content>
+                </Tooltip>
+                <Tooltip>
+                  <Tooltip.Trigger>
+                    <AppButton
+                      variant="ghost"
+                      size="sm"
+                      isIconOnly
+                      onPress={() => setShowSubtaskInput(!showSubtaskInput)}
+                      className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                      prefix={<FiCornerDownRight className="size-4" />}
+                    />
+                  </Tooltip.Trigger>
+                  <Tooltip.Content>
+                    <p className="text-xs">Add subtask</p>
+                  </Tooltip.Content>
+                </Tooltip>
+              </>
+            )}
             <Tooltip>
               <Tooltip.Trigger>
                 <AppButton
                   variant="ghost"
                   size="sm"
                   isIconOnly
-                  onPress={() => setExpandedSubtasks(!expandedSubtasks)}
-                  className="text-muted hover:text-foreground shrink-0"
-                  prefix={
-                    expandedSubtasks ? (
-                      <FiChevronUp className="size-4" />
-                    ) : (
-                      <FiChevronDown className="size-4" />
-                    )
-                  }
+                  onPress={() => onDelete(todo.id)}
+                  className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                  prefix={<FiTrash2 className="size-4" />}
                 />
               </Tooltip.Trigger>
               <Tooltip.Content>
-                <p className="text-xs">
-                  {expandedSubtasks ? "Collapse subtasks" : "Expand subtasks"}
-                </p>
+                <p className="text-xs">Delete task</p>
               </Tooltip.Content>
             </Tooltip>
-          )}
-          {!todo.completed && onMoveToToday && (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <AppButton
-                  variant="ghost"
-                  size="sm"
-                  isIconOnly
-                  onPress={() => onMoveToToday(todo.id)}
-                  className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
-                  prefix={<FiArrowUp className="size-4" />}
-                />
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <p className="text-xs">Move to today</p>
-              </Tooltip.Content>
-            </Tooltip>
-          )}
-          {!todo.completed && (
-            <Tooltip>
-              <Tooltip.Trigger>
-                <AppButton
-                  variant="ghost"
-                  size="sm"
-                  isIconOnly
-                  onPress={() => setShowSubtaskInput(!showSubtaskInput)}
-                  className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
-                  prefix={<FiCornerDownRight className="size-4" />}
-                />
-              </Tooltip.Trigger>
-              <Tooltip.Content>
-                <p className="text-xs">Add subtask</p>
-              </Tooltip.Content>
-            </Tooltip>
-          )}
-          <Tooltip>
-            <Tooltip.Trigger>
-              <AppButton
-                variant="ghost"
-                size="sm"
-                isIconOnly
-                onPress={() => onDelete(todo.id)}
-                className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
-                prefix={<FiTrash2 className="size-4" />}
-              />
-            </Tooltip.Trigger>
-            <Tooltip.Content>
-              <p className="text-xs">Delete task</p>
-            </Tooltip.Content>
-          </Tooltip>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Subtask Input */}
       {showSubtaskInput && (
@@ -684,6 +784,7 @@ function TodoItem({
               subtask={subtask}
               onToggle={onToggle}
               onDelete={onDelete}
+              onUpdate={onUpdate}
             />
           ))}
         </div>
@@ -696,54 +797,122 @@ interface SubtaskItemProps {
   subtask: Todo;
   onToggle: (id: string) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  onUpdate: (id: string, updates: Partial<Todo>) => Promise<void>;
 }
 
 function SubtaskItem({
   subtask,
   onToggle,
   onDelete,
+  onUpdate,
 }: Readonly<SubtaskItemProps>) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(subtask.title);
+
+  const handleSaveEdit = useCallback(async () => {
+    if (editTitle.trim()) {
+      await onUpdate(subtask.id, { title: editTitle.trim() });
+      setIsEditing(false);
+    }
+  }, [editTitle, onUpdate, subtask.id]);
+
+  const handleCancelEdit = useCallback(() => {
+    setIsEditing(false);
+    setEditTitle(subtask.title);
+  }, [subtask.title]);
+
+  const handleEditKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleSaveEdit();
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        handleCancelEdit();
+      }
+    },
+    [handleSaveEdit, handleCancelEdit],
+  );
 
   return (
-    <div
-      className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      <div className="flex items-center">
-        <Checkbox
-          isSelected={subtask.completed}
-          onChange={() => onToggle(subtask.id)}
-          variant={isHovered ? "primary" : "secondary"}
-        >
-          <Checkbox.Control className="size-3.5">
-            <Checkbox.Indicator />
-          </Checkbox.Control>
-        </Checkbox>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p
-          className={`text-xs ${subtask.completed ? "text-muted line-through" : "text-foreground"}`}
-        >
-          {subtask.title}
-        </p>
-      </div>
-      <Tooltip>
-        <Tooltip.Trigger>
-          <AppButton
-            variant="ghost"
-            size="sm"
-            isIconOnly
-            onPress={() => onDelete(subtask.id)}
-            className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
-            prefix={<FiTrash2 className="size-3" />}
+    <div>
+      {isEditing ? (
+        <div className="ml-6 flex items-center gap-2 py-1">
+          <AppInput
+            placeholder="Subtask title"
+            ariaLabel="Subtask title"
+            value={editTitle}
+            onChange={setEditTitle}
+            autoFocus
+            fullWidth
+            onKeyDown={handleEditKeyDown}
           />
-        </Tooltip.Trigger>
-        <Tooltip.Content>
-          <p className="text-xs">Delete subtask</p>
-        </Tooltip.Content>
-      </Tooltip>
+          <AppButton size="sm" variant="primary" onPress={handleSaveEdit}>
+            Save
+          </AppButton>
+          <AppButton size="sm" variant="ghost" onPress={handleCancelEdit}>
+            Cancel
+          </AppButton>
+        </div>
+      ) : (
+        <div
+          className="group hover:bg-surface-hover flex w-full items-center gap-2 rounded-lg px-3 transition-colors"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <div className="flex items-center">
+            <Checkbox
+              isSelected={subtask.completed}
+              onChange={() => onToggle(subtask.id)}
+              variant={isHovered ? "primary" : "secondary"}
+            >
+              <Checkbox.Control className="size-3.5">
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+            </Checkbox>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p
+              className={`text-xs ${subtask.completed ? "text-muted line-through" : "text-foreground"}`}
+            >
+              {subtask.title}
+            </p>
+          </div>
+          {!subtask.completed && (
+            <Tooltip>
+              <Tooltip.Trigger>
+                <AppButton
+                  variant="ghost"
+                  size="sm"
+                  isIconOnly
+                  onPress={() => setIsEditing(true)}
+                  className="text-muted hover:text-accent shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                  prefix={<FiEdit2 className="size-3" />}
+                />
+              </Tooltip.Trigger>
+              <Tooltip.Content>
+                <p className="text-xs">Edit subtask</p>
+              </Tooltip.Content>
+            </Tooltip>
+          )}
+          <Tooltip>
+            <Tooltip.Trigger>
+              <AppButton
+                variant="ghost"
+                size="sm"
+                isIconOnly
+                onPress={() => onDelete(subtask.id)}
+                className="text-muted hover:text-danger shrink-0 opacity-0 transition-all group-hover:opacity-100"
+                prefix={<FiTrash2 className="size-3" />}
+              />
+            </Tooltip.Trigger>
+            <Tooltip.Content>
+              <p className="text-xs">Delete subtask</p>
+            </Tooltip.Content>
+          </Tooltip>
+        </div>
+      )}
     </div>
   );
 }
