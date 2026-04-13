@@ -72,4 +72,8 @@ export const todoStorage = {
       await todoStorage.saveTodos(todos);
     }
   },
+
+  async clearAllTodos(): Promise<void> {
+    await todoStorage.saveTodos([]);
+  },
 };

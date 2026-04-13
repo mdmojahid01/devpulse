@@ -21,8 +21,16 @@ import type { Todo } from "@/services/todoStorage";
 import AppKbd from "./ui/AppKbd";
 
 export default function TodoList() {
-  const { todos, loading, error, addTodo, toggleTodo, deleteTodo, updateTodo } =
-    useTodos();
+  const {
+    todos,
+    loading,
+    error,
+    addTodo,
+    toggleTodo,
+    deleteTodo,
+    updateTodo,
+    clearAllTodos,
+  } = useTodos();
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [showInput, setShowInput] = useState(false);
@@ -146,10 +154,9 @@ export default function TodoList() {
         "Are you sure you want to delete all tasks? This action cannot be undone.",
       )
     ) {
-      const allTodoIds = todos.map(t => t.id);
-      await Promise.all(allTodoIds.map(id => deleteTodo(id)));
+      await clearAllTodos();
     }
-  }, [todos, deleteTodo]);
+  }, [clearAllTodos]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {

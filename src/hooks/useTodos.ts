@@ -15,6 +15,7 @@ type UseTodosReturn = {
   updateTodo: (id: string, updates: Partial<Todo>) => Promise<void>;
   deleteTodo: (id: string) => Promise<void>;
   toggleTodo: (id: string) => Promise<void>;
+  clearAllTodos: () => Promise<void>;
   refreshTodos: () => Promise<void>;
 };
 
@@ -93,6 +94,17 @@ export function useTodos(): UseTodosReturn {
     [loadTodos],
   );
 
+  const clearAllTodos = useCallback(async () => {
+    try {
+      await todoStorage.clearAllTodos();
+      await loadTodos();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to clear all todos",
+      );
+    }
+  }, [loadTodos]);
+
   return {
     todos,
     loading,
@@ -101,6 +113,7 @@ export function useTodos(): UseTodosReturn {
     updateTodo,
     deleteTodo,
     toggleTodo,
+    clearAllTodos,
     refreshTodos: loadTodos,
   };
 }
