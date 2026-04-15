@@ -76,4 +76,71 @@ export const todoStorage = {
   async clearAllTodos(): Promise<void> {
     await todoStorage.saveTodos([]);
   },
+
+  async exportTodos(): Promise<string> {
+    const todos = await todoStorage.getTodos();
+    const exportData = {
+      version: "1.0.0",
+      exportedAt: new Date().toISOString(),
+      todos,
+    };
+    return JSON.stringify(exportData, null, 2);
+  },
+
+  async importTodos(
+    jsonString: string,
+  ): Promise<{ added: number; skipped: number }> {
+    try {
+      const importData = JSON.parse(jsonString);
+
+      // Validate structure
+      if (
+        !importData.version ||
+        !importData.todos ||
+        !Array.isArray(importData.todos)
+      ) {
+        throw new Error(
+          "Invalid JSON structure. Expected format: { version, exportedAt, todos }",
+        );
+      }
+
+      // Validate each todo item
+      for (const todo of importData.todos) {
+        if (
+          !todo.id ||
+          !todo.title ||
+          typeof todo.completed !== "boolean" ||
+          !todo.createdAt ||
+          !todo.date
+        ) {
+          throw new Error(
+            "Invalid todo structure. Each todo must have: id, title, completed, createdAt, date",
+          );
+        }
+      }
+
+      const existingTodos = await todoStorage.getTodos();
+      const existingIds = new Set(existingTodos.map(t => t.id));
+
+      // Filter out duplicates
+      const newTodos = importData.todos.filter(
+        (todo: Todo) => !existingIds.has(todo.id),
+      );
+
+      if (newTodos.length > 0) {
+        const mergedTodos = [...existingTodos, ...newTodos];
+        await todoStorage.saveTodos(mergedTodos);
+      }
+
+      return {
+        added: newTodos.length,
+        skipped: importData.todos.length - newTodos.length,
+      };
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error("Invalid JSON format. Please check your file.");
+      }
+      throw error;
+    }
+  },
 };

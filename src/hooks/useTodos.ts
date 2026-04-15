@@ -17,6 +17,10 @@ type UseTodosReturn = {
   toggleTodo: (id: string) => Promise<void>;
   clearAllTodos: () => Promise<void>;
   refreshTodos: () => Promise<void>;
+  exportTodos: () => Promise<string>;
+  importTodos: (
+    jsonString: string,
+  ) => Promise<{ added: number; skipped: number }>;
 };
 
 export function useTodos(): UseTodosReturn {
@@ -105,6 +109,24 @@ export function useTodos(): UseTodosReturn {
     }
   }, [loadTodos]);
 
+  const exportTodos = useCallback(async () => {
+    return await todoStorage.exportTodos();
+  }, []);
+
+  const importTodos = useCallback(
+    async (jsonString: string) => {
+      try {
+        const result = await todoStorage.importTodos(jsonString);
+        await loadTodos();
+        return result;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to import todos");
+        throw err;
+      }
+    },
+    [loadTodos],
+  );
+
   return {
     todos,
     loading,
@@ -115,5 +137,7 @@ export function useTodos(): UseTodosReturn {
     toggleTodo,
     clearAllTodos,
     refreshTodos: loadTodos,
+    exportTodos,
+    importTodos,
   };
 }

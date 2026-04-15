@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useTodos } from "@/hooks/useTodos";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
-import { Checkbox, Tooltip } from "@heroui/react";
+import { Checkbox, Tooltip, Dropdown, Label } from "@heroui/react";
 import {
   FiPlus,
   FiTrash2,
@@ -15,6 +15,9 @@ import {
   FiEdit2,
   FiCheck,
   FiX,
+  FiDownload,
+  FiUpload,
+  FiMoreVertical,
 } from "react-icons/fi";
 import AppCard from "@/components/ui/AppCard";
 import AppButton from "@/components/ui/AppButton";
@@ -22,6 +25,7 @@ import AppInput from "@/components/ui/AppInput";
 import { formatDate } from "@/lib/dateFormat";
 import type { Todo } from "@/services/todoStorage";
 import AppKbd from "./ui/AppKbd";
+import { notifyError, notifySuccess } from "@/lib/notify";
 
 export default function TodoList() {
   const {
@@ -33,6 +37,8 @@ export default function TodoList() {
     deleteTodo,
     updateTodo,
     clearAllTodos,
+    exportTodos,
+    importTodos,
   } = useTodos();
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -40,6 +46,7 @@ export default function TodoList() {
   const [expandedPreviousPending, setExpandedPreviousPending] = useState(true);
   const [expandedPreviousCompleted, setExpandedPreviousCompleted] =
     useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
@@ -161,6 +168,54 @@ export default function TodoList() {
     }
   }, [clearAllTodos]);
 
+  const handleExport = useCallback(async () => {
+    try {
+      const jsonData = await exportTodos();
+      const blob = new Blob([jsonData], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `devpulse-todos-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      notifyError(
+        err instanceof Error ? err.message : "Failed to export todos",
+      );
+    }
+  }, [exportTodos]);
+
+  const handleImport = useCallback(async () => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleFileChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const result = await importTodos(text);
+        notifySuccess(
+          `Successfully imported ${result.added} task(s). ${result.skipped > 0 ? `Skipped ${result.skipped} duplicate(s).` : ""}`,
+        );
+      } catch (err) {
+        notifyError(
+          err instanceof Error ? err.message : "Failed to import todos",
+        );
+      }
+
+      // Reset file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    },
+    [importTodos],
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -257,10 +312,46 @@ export default function TodoList() {
             >
               Add Task
             </AppButton>
+            <Dropdown>
+              <AppButton
+                size="sm"
+                variant="secondary"
+                isIconOnly
+                prefix={<FiMoreVertical className="size-4" />}
+              />
+              <Dropdown.Popover>
+                <Dropdown.Menu
+                  onAction={key => {
+                    if (key === "import") handleImport();
+                    if (key === "export") handleExport();
+                  }}
+                >
+                  <Dropdown.Item id="import" textValue="Import from JSON">
+                    <FiUpload className="text-muted size-4 shrink-0" />
+                    <Label>Import from JSON</Label>
+                  </Dropdown.Item>
+                  {todos.length > 0 && (
+                    <Dropdown.Item id="export" textValue="Export to JSON">
+                      <FiDownload className="text-muted size-4 shrink-0" />
+                      <Label>Export to JSON</Label>
+                    </Dropdown.Item>
+                  )}
+                </Dropdown.Menu>
+              </Dropdown.Popover>
+            </Dropdown>
           </div>
         </AppCard.Header>
 
         <AppCard.Content className="space-y-4">
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+
           {loading ? (
             <div className="text-muted flex items-center justify-center py-8 text-sm">
               Loading tasks...
