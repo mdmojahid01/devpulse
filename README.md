@@ -1,73 +1,112 @@
-# React + TypeScript + Vite
+<div align="center">
+  <img src="./docs/images/DevPulse.png" alt="DevPulse Logo" width="200"/>
+  
+  # DevPulse
+  
+  **Your productivity hub in every new tab** 🚀
+  
+  A Chrome extension that transforms your new tab into a developer dashboard with GitHub activity, todos, LeetCode stats, and motivational quotes.
+  
+  [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](./LICENSE)
+  ![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
+  
+</div>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+---
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **GitHub Activity** — Visualize your contributions and recent activity
+- **Smart Todos** — Date-wise organization with pending task tracking
+- **LeetCode Stats** — Track your coding progress
+- **Motivational Quotes** — AI-generated or custom quotes based on your activity
+- **Reading List** — Save articles to read later
+- **Theme Support** — Light/Dark mode with HeroUI v3
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Quick Start
 
-## Expanding the ESLint configuration
+### Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- Node.js 18+
+- Chrome/Edge browser
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Installation
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+```bash
+# Clone the repo
+git clone https://github.com/mdmojahid01/devpulse.git
+cd devpulse
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Install dependencies
+npm install
+
+# Build the extension
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Load in Chrome
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. Open `chrome://extensions/`
+2. Enable **Developer mode**
+3. Click **Load unpacked**
+4. Select the `dist` folder
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+---
+
+## Development
+
+```bash
+# Start dev server
+npm run dev
+
+# Lint & format
+npm run lint
+npm run format
 ```
+
+---
+
+## Tech Stack
+
+- **React 19** + **TypeScript** + **Vite**
+- **HeroUI v3** — Modern UI components
+- **Tailwind CSS v4** — Styling
+- **Chrome Extension Manifest v3**
+
+---
+
+## Project Structure
+
+```
+src/
+├── pages/         # Main page components
+├── components/    # Reusable UI components
+├── hooks/         # Custom React hooks
+├── services/      # API & storage services
+└── lib/           # Utilities & helpers
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to:
+
+- Report bugs
+- Suggest features
+- Submit pull requests
+
+---
+
+## License
+
+AGPL-3.0 © [Md Mojahid](https://www.linkedin.com/in/mdmojahid01/)
+
+---
+
+<div align="center">
+  Made with ❤️ by developers, for developers
+</div>
