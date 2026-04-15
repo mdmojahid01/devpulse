@@ -1,19 +1,25 @@
-<div align="center">
-  <img src="./docs/images/DevPulse.png" alt="DevPulse Logo" width="200"/>
-  
-  # DevPulse
-  
-  **Your productivity hub in every new tab** 🚀
-  
-  A Chrome extension that transforms your new tab into a developer dashboard with GitHub activity, todos, LeetCode stats, and motivational quotes.
-  
-  [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](./LICENSE)
-  ![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react)
-  ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)
-  
-</div>
+<h1 align="center">DevPulse</h1>
 
----
+<p align="center">
+  <strong>Your productivity hub in every new tab</strong>
+</p>
+
+<p align="center">
+  A Chrome extension that transforms your new tab into a developer dashboard with GitHub activity, todos, LeetCode stats, and motivational quotes.
+</p>
+
+<p align="center">
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License: AGPL-3.0"></a>
+  <img src="https://img.shields.io/badge/React-19.2-61DAFB?logo=react" alt="React 19.2">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript" alt="TypeScript 5.9">
+  <a href="https://github.com/mdmojahid01/devpulse/issues"><img src="https://img.shields.io/github/issues/mdmojahid01/devpulse" alt="Open issues"></a>
+  <a href="https://github.com/mdmojahid01/devpulse/pulls"><img src="https://img.shields.io/github/issues-pr/mdmojahid01/devpulse" alt="Open pull requests"></a>
+  <img src="https://img.shields.io/github/contributors/mdmojahid01/devpulse" alt="Contributors">
+</p>
+
+
+![DevPulse Screenshot](./docs/images/DevPulse.png)
+
 
 ## Features
 
@@ -24,7 +30,6 @@
 - **Reading List** — Save articles to read later
 - **Theme Support** — Light/Dark mode with HeroUI v3
 
----
 
 ## Quick Start
 
@@ -54,7 +59,6 @@ npm run build
 3. Click **Load unpacked**
 4. Select the `dist` folder
 
----
 
 ## Development
 
@@ -67,7 +71,6 @@ npm run lint
 npm run format
 ```
 
----
 
 ## Tech Stack
 
@@ -76,7 +79,6 @@ npm run format
 - **Tailwind CSS v4** — Styling
 - **Chrome Extension Manifest v3**
 
----
 
 ## Project Structure
 
@@ -89,9 +91,8 @@ src/
 └── lib/           # Utilities & helpers
 ```
 
----
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome! Feel free to:
 
@@ -99,13 +100,11 @@ Contributions are welcome! Feel free to:
 - Suggest features
 - Submit pull requests
 
----
 
 ## License
 
 AGPL-3.0 © [Md Mojahid](https://www.linkedin.com/in/mdmojahid01/)
 
----
 
 <div align="center">
   Made with ❤️ by developers, for developers
