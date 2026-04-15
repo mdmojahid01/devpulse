@@ -9,12 +9,17 @@
 </p>
 
 <p align="center">
+  <a href="https://devpulse.mojahid.dev/"><img src="https://img.shields.io/badge/Live-Demo-2ea44f?logo=vercel&logoColor=white" alt="Live demo"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/License-AGPL%203.0-blue.svg" alt="License: AGPL-3.0"></a>
   <img src="https://img.shields.io/badge/React-19.2-61DAFB?logo=react" alt="React 19.2">
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript" alt="TypeScript 5.9">
   <a href="https://github.com/mdmojahid01/devpulse/issues"><img src="https://img.shields.io/github/issues/mdmojahid01/devpulse" alt="Open issues"></a>
   <a href="https://github.com/mdmojahid01/devpulse/pulls"><img src="https://img.shields.io/github/issues-pr/mdmojahid01/devpulse" alt="Open pull requests"></a>
   <img src="https://img.shields.io/github/contributors/mdmojahid01/devpulse" alt="Contributors">
+</p>
+
+<p align="center">
+  <a href="https://devpulse.mojahid.dev/">devpulse.mojahid.dev</a>
 </p>
 
 
