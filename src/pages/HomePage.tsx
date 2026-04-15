@@ -184,7 +184,10 @@ export default function HomePage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {visibility.showGithub && (
             <div>
-              <GithubActivity githubData={githubData} />
+              <GithubActivity
+                githubData={githubData}
+                username={config?.githubUsername || ""}
+              />
             </div>
           )}
           {visibility.showTodo && (

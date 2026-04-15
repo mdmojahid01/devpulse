@@ -37,7 +37,7 @@ export default function TodoList() {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [showInput, setShowInput] = useState(false);
-  const [expandedPreviousPending, setExpandedPreviousPending] = useState(false);
+  const [expandedPreviousPending, setExpandedPreviousPending] = useState(true);
   const [expandedPreviousCompleted, setExpandedPreviousCompleted] =
     useState(false);
   const formRef = useRef<HTMLDivElement>(null);

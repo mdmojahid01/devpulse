@@ -18,9 +18,13 @@ import MonthlyStyleGraph from "./MonthlyStyleGraph";
 
 type GithubActivityProps = {
   githubData: ReturnType<typeof useGithubData>;
+  username: string;
 };
 
-function GithubActivity({ githubData }: Readonly<GithubActivityProps>) {
+function GithubActivity({
+  githubData,
+  username,
+}: Readonly<GithubActivityProps>) {
   const {
     contributions,
     repos,
@@ -34,6 +38,13 @@ function GithubActivity({ githubData }: Readonly<GithubActivityProps>) {
   } = githubData;
 
   const [viewMode, setViewMode] = useState<"github" | "monthly">("github");
+
+  // Filter repos with activity in last 2 months
+  const activeRepos = repos.filter(repo => {
+    const twoMonthsAgo = new Date();
+    twoMonthsAgo.setMonth(twoMonthsAgo.getMonth() - 2);
+    return new Date(repo.updated_at) >= twoMonthsAgo;
+  });
 
   if (loading) {
     return (
@@ -57,37 +68,62 @@ function GithubActivity({ githubData }: Readonly<GithubActivityProps>) {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <AppCard className="p-4">
-          <AppCard.Content className="flex items-center gap-3">
-            <FiGitCommit className="text-accent text-2xl" />
-            <div>
-              <p className="text-muted text-sm">Today's Pushes</p>
-              <p className="text-center text-2xl font-bold">{todayCommits}</p>
-            </div>
-          </AppCard.Content>
-        </AppCard>
+        <a
+          href={`https://github.com/${username}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+        >
+          <AppCard className="hover:bg-surface-hover cursor-pointer p-4 transition-colors">
+            <AppCard.Content className="flex items-center gap-3">
+              <FiGitCommit className="text-accent text-2xl" />
+              <div>
+                <p className="text-muted text-sm">Today's Pushes</p>
+                <p className="text-center text-2xl font-bold">{todayCommits}</p>
+              </div>
+            </AppCard.Content>
+          </AppCard>
+        </a>
 
-        <AppCard className="p-4">
-          <AppCard.Content className="flex items-center gap-3">
-            <FiActivity className="text-success text-2xl" />
-            <div>
-              <p className="text-muted text-sm">Total Contributions</p>
-              <p className="text-center text-2xl font-bold">
-                {totalContributions}
-              </p>
-            </div>
-          </AppCard.Content>
-        </AppCard>
+        <a
+          href={`https://github.com/${username}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+          title="Last year contribution count"
+        >
+          <AppCard className="hover:bg-surface-hover cursor-pointer p-4 transition-colors">
+            <AppCard.Content className="flex items-center gap-3">
+              <FiActivity className="text-success text-2xl" />
+              <div>
+                <p className="text-muted text-sm">Total Contributions</p>
+                <p className="text-center text-2xl font-bold">
+                  {totalContributions}
+                </p>
+              </div>
+            </AppCard.Content>
+          </AppCard>
+        </a>
 
-        <AppCard className="p-4">
-          <AppCard.Content className="flex items-center gap-3">
-            <FiGithub className="text-2xl" />
-            <div>
-              <p className="text-muted text-sm">Active Repos</p>
-              <p className="text-center text-2xl font-bold">{repos.length}</p>
-            </div>
-          </AppCard.Content>
-        </AppCard>
+        <a
+          href={`https://github.com/${username}?tab=repositories&q=&type=public&language=&sort=`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block"
+          title="Count of Repositories with Activity Over the Last 2 Months"
+        >
+          <AppCard className="hover:bg-surface-hover cursor-pointer p-4 transition-colors">
+            <AppCard.Content className="flex items-center gap-3">
+              <FiGithub className="text-2xl" />
+              <div>
+                <p className="text-muted text-sm">Active Repos</p>
+                <p className="text-center text-2xl font-bold">
+                  {activeRepos.length}
+                </p>
+              </div>
+            </AppCard.Content>
+          </AppCard>
+        </a>
       </div>
 
       {/* Contribution Calendar */}
@@ -167,12 +203,15 @@ function GithubActivity({ githubData }: Readonly<GithubActivityProps>) {
       <AppCard className="p-6">
         <AppCard.Header className="pb-4">
           <h3 className="text-lg font-semibold">
-            Recent Activity in Public Repos
+            Recent Activity in Public Repositories{" "}
+            <span className="text-muted text-xs font-light">
+              (Contributions to These Repositories Over the Past 2 Months)
+            </span>
           </h3>
         </AppCard.Header>
         <AppCard.Content>
           <div className="space-y-3">
-            {repos.map(repo => (
+            {activeRepos.map(repo => (
               <a
                 key={repo.id}
                 href={repo.html_url}
