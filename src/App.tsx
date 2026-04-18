@@ -1,5 +1,6 @@
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
+import { useTabTitle } from "@/hooks/useTabTitle";
 import { useMemo } from "react";
 import HomePage from "@/pages/HomePage";
 
@@ -20,6 +21,7 @@ export default function App() {
   );
 
   useGlobalShortcuts(globalShortcuts);
+  useTabTitle();
 
   return (
     <HashRouter>
