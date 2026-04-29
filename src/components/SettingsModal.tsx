@@ -1,6 +1,6 @@
 import { Modal, Surface, Switch } from "@heroui/react";
 import AppInput from "@/components/ui/AppInput";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   readConfig,
   writeConfig,
@@ -8,6 +8,7 @@ import {
   type AppConfig,
   type UIVisibility,
 } from "@/services/configStorage";
+import { validateGithubUser } from "@/services/github";
 import AppButton from "./ui/AppButton";
 import AppLabel from "./ui/AppLabel";
 import AppKbd from "./ui/AppKbd";
@@ -32,6 +33,8 @@ export default function SettingsModal({
     DEFAULT_UI_VISIBILITY,
   );
   const [loading, setLoading] = useState(false);
+  const [githubError, setGithubError] = useState<string | null>(null);
+  const [validating, setValidating] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,11 +49,20 @@ export default function SettingsModal({
     }
   }, [isOpen]);
 
-  const handleSave = async () => {
-    if (!githubUsername.trim()) {
+  const validateAndSave = useCallback(async () => {
+    const trimmed = githubUsername.trim();
+    if (!trimmed) return;
+
+    setValidating(true);
+    const exists = await validateGithubUser(trimmed).catch(() => false);
+    setValidating(false);
+
+    if (!exists) {
+      setGithubError(`GitHub profile "${trimmed}" not found`);
       return;
     }
 
+    setGithubError(null);
     setLoading(true);
     const config: AppConfig = {
       githubUsername: githubUsername.trim(),
@@ -63,7 +75,16 @@ export default function SettingsModal({
     onSave(config);
     setLoading(false);
     onClose();
-  };
+  }, [
+    githubUsername,
+    leetcodeUsername,
+    customQuote,
+    uiVisibility,
+    onSave,
+    onClose,
+  ]);
+
+  const handleSave = validateAndSave;
 
   return (
     <Modal.Backdrop
@@ -90,12 +111,20 @@ export default function SettingsModal({
                       label="GitHub Username"
                       placeholder="Enter your GitHub username"
                       value={githubUsername}
-                      onChange={setGithubUsername}
+                      onChange={v => {
+                        setGithubUsername(v);
+                        setGithubError(null);
+                      }}
+                      onKeyDown={e => e.key === "Enter" && validateAndSave()}
                       isRequired
                       fullWidth
                       variant="secondary"
-                      errorMessage="Github username is required"
-                      isInvalid={!githubUsername.trim() && !loading}
+                      errorMessage={
+                        githubError ?? "GitHub username is required"
+                      }
+                      isInvalid={
+                        !!githubError || (!githubUsername.trim() && !loading)
+                      }
                     />
                     <AppInput
                       label="LeetCode Username (Optional)"
@@ -231,8 +260,8 @@ export default function SettingsModal({
             </AppButton>
             <AppButton
               onPress={handleSave}
-              isDisabled={!githubUsername.trim() || loading}
-              isPending={loading}
+              isDisabled={!githubUsername.trim() || loading || validating}
+              isPending={loading || validating}
             >
               Save
             </AppButton>

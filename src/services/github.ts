@@ -250,6 +250,17 @@ export type GithubEvent = {
   };
 };
 
+// Validate if a GitHub user exists
+export const validateGithubUser = async (
+  username: string,
+): Promise<boolean> => {
+  const response = await chromeFetch(
+    `https://api.github.com/users/${username}`,
+    { headers: { Accept: "application/vnd.github.v3+json" } },
+  );
+  return response.ok;
+};
+
 // Fetch user's recent repositories
 export const fetchRecentRepos = async (
   username: string,
