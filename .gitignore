@@ -22,7 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.amazonq/
 
 # Environment variables
 .env
@@ -30,3 +29,4 @@ dist-ssr
 !.env.example
 AGENT.md
 temp.md
+graphify-out/cache
