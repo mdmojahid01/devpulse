@@ -78,7 +78,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="bg-background min-h-screen px-4 py-6">
+    <main className="bg-background min-h-screen px-4 pt-6">
       <div className="mx-auto max-w-[90dvw] space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -160,24 +160,27 @@ export default function HomePage() {
             </Tooltip>
           </div>
         </div>
+
         {visibility.showSearch && (
-          <div className="flex justify-center">
-            <div className="w-full max-w-2xl">
-              <AppInput
-                ref={searchInputRef}
-                placeholder="Search Google..."
-                ariaLabel="Search Google"
-                value={searchQuery}
-                onChange={setSearchQuery}
-                onKeyDown={handleKeyPress}
-                autoFocus
-                fullWidth
-                inputGroupClassName="h-14 rounded-full"
-                prefix={<FaGoogle className="text-muted size-5" />}
-                suffix={
-                  <AppKbd keyValue="E" cmdOrCtrl={true} className="mr-2" />
-                }
-              />
+          <div className="bg-background/80 sticky top-0 z-10 -mx-4 px-4 py-3 backdrop-blur-md">
+            <div className="flex justify-center">
+              <div className="w-full max-w-2xl">
+                <AppInput
+                  ref={searchInputRef}
+                  placeholder="Search Google..."
+                  ariaLabel="Search Google"
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onKeyDown={handleKeyPress}
+                  autoFocus
+                  fullWidth
+                  inputGroupClassName="h-14 rounded-full"
+                  prefix={<FaGoogle className="text-muted size-5" />}
+                  suffix={
+                    <AppKbd keyValue="E" cmdOrCtrl={true} className="mr-2" />
+                  }
+                />
+              </div>
             </div>
           </div>
         )}
