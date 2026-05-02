@@ -78,8 +78,8 @@ export default function HomePage() {
   }
 
   return (
-    <main className="bg-background min-h-screen px-4 pt-6">
-      <div className="mx-auto max-w-[90dvw] space-y-6">
+    <main className="bg-background flex min-h-screen flex-col px-4 pt-6">
+      <div className="mx-auto w-full max-w-[90dvw] flex-1 space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-foreground text-2xl font-bold">Dev Pulse</h1>
@@ -184,23 +184,33 @@ export default function HomePage() {
             </div>
           </div>
         )}
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {visibility.showGithub && (
-            <div>
-              <GithubActivity
-                githubData={githubData}
-                username={config?.githubUsername || ""}
-              />
-            </div>
-          )}
-          {visibility.showTodo && (
-            <div
-              className={`border-divider relative ${visibility.showGithub ? "lg:border-l lg:pl-6" : ""}`}
-            >
-              <TodoList />
-            </div>
-          )}
-        </div>
+        {(visibility.showGithub || visibility.showTodo) && (
+          <div
+            className={`grid grid-cols-1 gap-6 ${
+              visibility.showGithub && visibility.showTodo
+                ? "lg:grid-cols-2"
+                : "mx-auto max-w-2xl"
+            }`}
+          >
+            {visibility.showGithub && (
+              <div className="min-w-0">
+                <GithubActivity
+                  githubData={githubData}
+                  username={config?.githubUsername || ""}
+                />
+              </div>
+            )}
+            {visibility.showTodo && (
+              <div
+                className={`border-divider relative min-w-0 ${
+                  visibility.showGithub ? "lg:border-l lg:pl-6" : ""
+                }`}
+              >
+                <TodoList />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <SettingsModal

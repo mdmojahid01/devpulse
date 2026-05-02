@@ -219,11 +219,11 @@ function GithubActivity({
                 rel="noopener noreferrer"
                 className="hover:bg-surface-hover block rounded-lg border p-4 transition-colors"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{repo.name}</h4>
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="truncate font-semibold">{repo.name}</h4>
                     {repo.description && (
-                      <p className="text-muted mt-1 text-sm">
+                      <p className="text-muted mt-1 line-clamp-2 text-sm">
                         {repo.description}
                       </p>
                     )}
@@ -236,7 +236,7 @@ function GithubActivity({
                       )}
                     </div>
                   </div>
-                  <span className="text-muted text-xs">
+                  <span className="text-muted shrink-0 text-xs">
                     {formatDate(repo.updated_at)}
                   </span>
                 </div>

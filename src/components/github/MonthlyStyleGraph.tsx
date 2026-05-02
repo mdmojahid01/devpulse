@@ -13,7 +13,7 @@ function MonthlyStyleGraph({
   return (
     <div className="space-y-4">
       {/* Month boxes */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {monthsData.map(monthData => (
           <AppCard key={monthData.key} className="p-4">
             <AppCard.Header className="pb-3">
