@@ -214,6 +214,22 @@ export default function SettingsModal({
                         </Switch.Control>
                       </Switch>
                     </div>
+                    <div className="flex items-center justify-between">
+                      <AppLabel>Show Notes</AppLabel>
+                      <Switch
+                        isSelected={uiVisibility.showNotes}
+                        onChange={checked =>
+                          setUiVisibility(prev => ({
+                            ...prev,
+                            showNotes: checked,
+                          }))
+                        }
+                      >
+                        <Switch.Control>
+                          <Switch.Thumb />
+                        </Switch.Control>
+                      </Switch>
+                    </div>
                   </div>
                 </div>
 

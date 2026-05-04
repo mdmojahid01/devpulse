@@ -7,10 +7,7 @@
       "command": "npx",
       "disabled": false,
       "timeout": 60000,
-      "args": [
-        "-y",
-        "@heroui/react-mcp@latest"
-      ]
+      "args": ["-y", "@heroui/react-mcp@latest"]
     }
   },
   "tools": [

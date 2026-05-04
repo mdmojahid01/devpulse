@@ -1,17 +1,19 @@
 import GithubActivity from "@/components/github/GithubActivity";
 import ThemeToggle from "@/components/ThemeToggle";
 import TodoList from "@/components/TodoList";
+import NoteList from "@/components/notes/NoteList";
 import SettingsModal from "@/components/SettingsModal";
 import AppSpinner from "@/components/ui/AppSpinner";
 import Footer from "@/components/Footer";
 import { Tooltip } from "@heroui/react";
-import { FiRefreshCw, FiSettings, FiGithub } from "react-icons/fi";
+import { FiRefreshCw, FiSettings, FiGithub, FiFileText } from "react-icons/fi";
 import { FaGoogle } from "react-icons/fa";
 import { useGithubData } from "@/hooks/useGithubData";
 import { useAppConfig } from "@/hooks/useAppConfig";
 import AppButton from "@/components/ui/AppButton";
 import AppInput from "@/components/ui/AppInput";
 import { useMemo, useRef, useState } from "react";
+import { useNotes } from "@/hooks/useNotes";
 import AppKbd from "@/components/ui/AppKbd";
 import { useGlobalShortcuts } from "@/hooks/useGlobalShortcuts";
 import { DEFAULT_UI_VISIBILITY } from "@/services/configStorage";
@@ -28,6 +30,7 @@ export default function HomePage() {
   const visibility = config?.uiVisibility || DEFAULT_UI_VISIBILITY;
   const [searchQuery, setSearchQuery] = useState("");
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showNotesDrawer, setShowNotesDrawer] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-show settings on first load if not configured
@@ -36,6 +39,7 @@ export default function HomePage() {
     [isConfigured, configLoading, showSettingsModal],
   );
 
+  const { notes } = useNotes();
   const githubData = useGithubData(config?.githubUsername || "");
   const { refreshData, loading } = githubData;
 
@@ -92,7 +96,7 @@ export default function HomePage() {
               <Tooltip.Trigger>
                 <AppButton
                   variant="outline"
-                  size="sm"
+                  // size="sm"
                   isIconOnly
                   onPress={refreshData}
                   isDisabled={loading || !isConfigured}
@@ -110,7 +114,7 @@ export default function HomePage() {
               <Tooltip.Trigger>
                 <AppButton
                   variant="outline"
-                  size="sm"
+                  // size="sm"
                   isIconOnly
                   onPress={handleGoogleSearch}
                   suffix={<FaGoogle className="size-4" />}
@@ -126,7 +130,7 @@ export default function HomePage() {
               <Tooltip.Trigger>
                 <AppButton
                   variant="outline"
-                  size="sm"
+                  // size="sm"
                   isIconOnly
                   onPress={() => setShowSettingsModal(true)}
                 >
@@ -137,6 +141,29 @@ export default function HomePage() {
                 <p className="text-xs">Settings</p>
               </Tooltip.Content>
             </Tooltip>
+            {visibility.showNotes && (
+              <Tooltip>
+                <Tooltip.Trigger>
+                  <div className="relative">
+                    <AppButton
+                      variant="outline"
+                      isIconOnly
+                      onPress={() => setShowNotesDrawer(true)}
+                    >
+                      <FiFileText className="size-4" />
+                    </AppButton>
+                    {notes.length > 0 && (
+                      <span className="bg-accent text-background absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full text-[10px] font-bold">
+                        {notes.length > 99 ? "99+" : notes.length}
+                      </span>
+                    )}
+                  </div>
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  <p className="text-xs">Notes</p>
+                </Tooltip.Content>
+              </Tooltip>
+            )}
             <ThemeToggle />
 
             <div className="bg-muted mx-1 h-5 w-0.5" />
@@ -146,7 +173,7 @@ export default function HomePage() {
                 <AppLink
                   asButton
                   variant="outline"
-                  size="sm"
+                  // size="sm"
                   isIconOnly
                   href={site.githubRepoLink}
                   target="_blank"
@@ -221,6 +248,9 @@ export default function HomePage() {
           setShowSettingsModal(false);
         }}
       />
+      {visibility.showNotes && (
+        <NoteList isOpen={showNotesDrawer} onOpenChange={setShowNotesDrawer} />
+      )}
       <Footer />
     </main>
   );

@@ -5,6 +5,7 @@ export type UIVisibility = {
   showTodo: boolean;
   showSearch: boolean;
   showLeetcode: boolean;
+  showNotes: boolean;
 };
 
 export type AppConfig = {
@@ -19,6 +20,7 @@ export const DEFAULT_UI_VISIBILITY: UIVisibility = {
   showTodo: true,
   showSearch: true,
   showLeetcode: true,
+  showNotes: true,
 };
 
 const CONFIG_STORAGE_KEY = "devpulse_config";
