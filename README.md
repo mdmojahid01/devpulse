@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  A Chrome extension that transforms your new tab into a developer dashboard with GitHub activity, todos, LeetCode stats, motivational quotes, and a built-in notes manager.
+  A Chrome extension that transforms your new tab into a developer dashboard with GitHub activity, todos, and a built-in notes manager.
 </p>
 
 <p align="center">
@@ -31,10 +31,13 @@
 - **GitHub Activity** — Visualize your contributions and recent activity
 - **Smart Todos** — Date-wise organization with pending task tracking
 - **Notes** — Create and manage markdown notes with full-text search
-- **LeetCode Stats** — Track your coding progress
-- **Motivational Quotes** — AI-generated or custom quotes based on your activity
-- **Reading List** — Save articles to read later
 - **Theme Support** — Light/Dark mode with HeroUI v3
+
+### Upcoming Features
+
+- **LeetCode Stats** — Track your coding progress _(coming soon)_
+- **Motivational Quotes** — AI-generated or custom quotes based on your activity _(coming soon)_
+- **Reading List** — Save articles to read later _(coming soon)_
 
 
 ## Quick Start

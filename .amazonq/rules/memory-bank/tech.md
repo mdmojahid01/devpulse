@@ -155,8 +155,8 @@ npm run prepare      # Setup Husky hooks
 - Authentication: Personal access tokens (optional)
 - Rate limiting: Handled with caching
 
-### LeetCode API
-- Integration for coding stats (implementation in services/)
+### LeetCode API _(Upcoming)_
+- Integration for coding stats (implementation in services/) — not yet active
 
 ## Storage
 
